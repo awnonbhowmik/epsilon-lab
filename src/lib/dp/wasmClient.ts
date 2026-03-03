@@ -22,7 +22,7 @@ async function initWasm(): Promise<any> {
 }
 
 /**
- * Run a differentially private Laplace-mechanism simulation.
+ * Run a differentially private simulation (Laplace or Gaussian mechanism).
  *
  * Delegates all computation to the Rust/WASM engine.  The WASM function now
  * returns a structured JS object (via serde_wasm_bindgen) rather than a JSON
@@ -33,6 +33,8 @@ async function initWasm(): Promise<any> {
  */
 export async function simulate(req: SimRequest): Promise<SimResponse> {
   const mod = await initWasm();
+
+  const mechanism = req.mechanism ?? "laplace";
 
   // Validate inputs on the TS side before crossing the WASM boundary.
   if (!Array.isArray(req.values) || req.values.length === 0) {
@@ -47,6 +49,11 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
   if (!Number.isInteger(req.runs) || req.runs < 1 || req.runs > 10_000) {
     throw new Error("runs must be an integer between 1 and 10,000");
   }
+  if (mechanism === "gaussian") {
+    if (req.delta == null || !Number.isFinite(req.delta) || req.delta <= 0 || req.delta >= 1) {
+      throw new Error("delta must be a finite number in (0, 1) for the Gaussian mechanism");
+    }
+  }
 
   const float64Array = new Float64Array(req.values);
   const seedStr =
@@ -57,9 +64,11 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
   const raw = mod.simulate_query(
     float64Array,
     req.queryType,
+    mechanism,
     req.epsilon,
     req.sensitivity,
     req.runs,
+    mechanism === "gaussian" ? req.delta : undefined,
     seedStr
   );
 

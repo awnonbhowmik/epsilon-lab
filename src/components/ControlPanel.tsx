@@ -2,20 +2,26 @@
 
 import { DATASETS } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
-import type { QueryType } from "@/lib/dp/types";
+import type { Mechanism, QueryType, Topic } from "@/lib/dp/types";
 import { defaultSensitivity } from "@/lib/dp/utils";
 
 interface Props {
   datasetId: DatasetId;
   queryType: QueryType;
+  mechanism: Mechanism;
+  topic: Topic;
   epsilon: number;
+  delta: number;
   sensitivity: number;
   runs: number;
   seed: string;
   advancedOpen: boolean;
   onDatasetChange: (id: DatasetId) => void;
   onQueryChange: (q: QueryType) => void;
+  onMechanismChange: (m: Mechanism) => void;
+  onTopicChange: (t: Topic) => void;
   onEpsilonChange: (e: number) => void;
+  onDeltaChange: (d: number) => void;
   onSensitivityChange: (s: number) => void;
   onRunsChange: (r: number) => void;
   onSeedChange: (s: string) => void;
@@ -28,14 +34,20 @@ interface Props {
 export default function ControlPanel({
   datasetId,
   queryType,
+  mechanism,
+  topic,
   epsilon,
+  delta,
   sensitivity,
   runs,
   seed,
   advancedOpen,
   onDatasetChange,
   onQueryChange,
+  onMechanismChange,
+  onTopicChange,
   onEpsilonChange,
+  onDeltaChange,
   onSensitivityChange,
   onRunsChange,
   onSeedChange,
@@ -48,6 +60,32 @@ export default function ControlPanel({
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Mechanism */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-1">Mechanism</label>
+        <select
+          value={mechanism}
+          onChange={(e) => onMechanismChange(e.target.value as Mechanism)}
+          className="w-full bg-gray-800 border border-gray-600 text-gray-100 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="laplace">Laplace (ε-DP)</option>
+          <option value="gaussian">Gaussian (ε, δ)-DP</option>
+        </select>
+      </div>
+
+      {/* Topic */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-1">Topic</label>
+        <select
+          value={topic}
+          onChange={(e) => onTopicChange(e.target.value as Topic)}
+          className="w-full bg-gray-800 border border-gray-600 text-gray-100 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="single_query">Single Query</option>
+          <option value="composition">Composition</option>
+        </select>
+      </div>
+
       {/* Dataset */}
       <div>
         <label className="block text-sm font-semibold text-gray-300 mb-1">Dataset</label>
@@ -105,7 +143,9 @@ export default function ControlPanel({
         )}
         {isAcademic && (
           <p className="text-xs text-indigo-400 mb-2 font-mono">
-            Laplace scale b = Δf/ε &nbsp;|&nbsp; Pr[output ∈ S] ≤ e^ε · Pr[output ∈ S | adjacent input]
+            {mechanism === "laplace"
+              ? "Laplace scale b = Δf/ε  |  Pr[output ∈ S] ≤ e^ε · Pr[output ∈ S | adjacent input]"
+              : "Gaussian σ = Δf·√(2ln(1.25/δ))/ε  |  (ε, δ)-DP"}
           </p>
         )}
         <div className="flex items-center gap-3">
@@ -132,6 +172,33 @@ export default function ControlPanel({
           />
         </div>
       </div>
+
+      {/* Delta (Gaussian only) */}
+      {mechanism === "gaussian" && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-300 mb-1">
+            Delta (δ)
+            {isAcademic && <span className="text-indigo-400 font-mono"> — failure probability</span>}
+          </label>
+          {!isAcademic && (
+            <p className="text-xs text-gray-500 mb-2">
+              Small probability that the privacy guarantee may not hold. Typical values: 1e-5 to 1e-7.
+            </p>
+          )}
+          <input
+            type="number"
+            min={1e-10}
+            max={0.1}
+            step={1e-6}
+            value={delta}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (v > 0 && v < 1) onDeltaChange(v);
+            }}
+            className="w-full bg-gray-800 border border-gray-600 text-gray-100 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+      )}
 
       {/* Runs */}
       <div>

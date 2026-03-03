@@ -10,18 +10,24 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { laplacePdf } from "@/lib/dp/utils";
+import { laplacePdf, gaussianPdf } from "@/lib/dp/utils";
+import type { Mechanism } from "@/lib/dp/types";
 
 export type NoisePdfChartProps = {
   scale: number;
+  mechanism?: Mechanism;
+  sigma?: number;
 };
 
-export default function NoisePdfChart({ scale }: NoisePdfChartProps) {
+export default function NoisePdfChart({ scale, mechanism = "laplace", sigma }: NoisePdfChartProps) {
+  const isGaussian = mechanism === "gaussian" && sigma != null;
+  const spread = isGaussian ? sigma! : scale;
   const numPoints = 200;
-  const range = Math.max(scale * 6, 1);
+  const range = Math.max(spread * 6, 1);
   const data = Array.from({ length: numPoints }, (_, i) => {
     const x = -range + (2 * range * i) / (numPoints - 1);
-    return { x: parseFloat(x.toFixed(4)), pdf: laplacePdf(x, scale) };
+    const pdf = isGaussian ? gaussianPdf(x, sigma!) : laplacePdf(x, scale);
+    return { x: parseFloat(x.toFixed(4)), pdf };
   });
 
   return (
@@ -50,7 +56,7 @@ export default function NoisePdfChart({ scale }: NoisePdfChartProps) {
           <Line
             type="monotone"
             dataKey="pdf"
-            stroke="#818cf8"
+            stroke={isGaussian ? "#f472b6" : "#818cf8"}
             dot={false}
             strokeWidth={2}
           />
