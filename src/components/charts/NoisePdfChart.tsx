@@ -12,14 +12,13 @@ import {
 } from "recharts";
 import { laplacePdf } from "@/lib/dp/utils";
 
-interface Props {
+export type NoisePdfChartProps = {
   scale: number;
-  trueValue: number;
-}
+};
 
-export default function NoisePdfChart({ scale, trueValue }: Props) {
+export default function NoisePdfChart({ scale }: NoisePdfChartProps) {
   const numPoints = 200;
-  const range = Math.max(scale * 5, 1);
+  const range = Math.max(scale * 6, 1);
   const data = Array.from({ length: numPoints }, (_, i) => {
     const x = -range + (2 * range * i) / (numPoints - 1);
     return { x: parseFloat(x.toFixed(4)), pdf: laplacePdf(x, scale) };

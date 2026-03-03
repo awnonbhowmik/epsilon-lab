@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import ControlPanel from "./ControlPanel";
 import ResultsPanel from "./ResultsPanel";
@@ -12,6 +12,7 @@ import type { DatasetId } from "@/lib/datasets";
 import type { QueryType, SimRequest, SimResponse } from "@/lib/dp/types";
 import { defaultSensitivity } from "@/lib/dp/utils";
 import { simulate } from "@/lib/dp/wasmClient";
+import { useDebouncedValue } from "@/lib/dp/useDebouncedValue";
 
 const NoisePdfChart = dynamic(() => import("./charts/NoisePdfChart"), {
   ssr: false,
@@ -42,7 +43,20 @@ export default function Simulator() {
   const [isRunning, setIsRunning] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Debounce sensitivity changes so the utility curve isn't recomputed on every tick.
+  const debouncedSensitivity = useDebouncedValue(sensitivity, 300);
+
   const currentDataset = DATASETS.find((d) => d.id === datasetId)!;
+
+  const parsedSeed = useMemo(() => {
+    const trimmed = seed.trim();
+    if (!trimmed) return undefined;
+    try {
+      return BigInt(trimmed);
+    } catch {
+      return undefined;
+    }
+  }, [seed]);
 
   // Reset sensitivity default when query type or dataset changes.
   useEffect(() => {
@@ -53,17 +67,11 @@ export default function Simulator() {
     setIsRunning(true);
     setError(null);
     try {
-      const parsedSeed = seed.trim()
-        ? (() => {
-            try {
-              return BigInt(seed.trim());
-            } catch {
-              throw new Error(
-                `Invalid seed "${seed.trim()}" — must be a non-negative integer`
-              );
-            }
-          })()
-        : undefined;
+      if (seed.trim() && parsedSeed === undefined) {
+        throw new Error(
+          `Invalid seed "${seed.trim()}" — must be a non-negative integer`
+        );
+      }
 
       const req: SimRequest = {
         values: currentDataset.values,
@@ -80,7 +88,7 @@ export default function Simulator() {
     } finally {
       setIsRunning(false);
     }
-  }, [currentDataset, queryType, epsilon, sensitivity, runs, seed]);
+  }, [currentDataset, queryType, epsilon, sensitivity, runs, seed, parsedSeed]);
 
   // Auto-run with 300 ms debounce on any control change.
   useEffect(() => {
@@ -92,14 +100,6 @@ export default function Simulator() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [runSimulation]);
-
-  const baseRequest: SimRequest = {
-    values: currentDataset.values,
-    queryType,
-    epsilon,
-    sensitivity,
-    runs,
-  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
@@ -191,7 +191,7 @@ export default function Simulator() {
               </h3>
               {isAcademic && (
                 <p className="text-xs font-mono text-indigo-400 mb-3">
-                  p(η) = (1/2b) · exp(−|η|/b),&nbsp;&nbsp;b = {result.scale.toFixed(4)}
+                  b = Δf/ε = {result.scale.toFixed(4)},&nbsp;&nbsp;p(η) = (1/2b) · exp(−|η|/b)
                 </p>
               )}
               {!isAcademic && (
@@ -199,7 +199,7 @@ export default function Simulator() {
                   Shape of the random noise added to the query answer
                 </p>
               )}
-              <NoisePdfChart scale={result.scale} trueValue={result.trueValue} />
+              <NoisePdfChart scale={result.scale} />
             </div>
 
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
@@ -228,7 +228,7 @@ export default function Simulator() {
               </h3>
               {isAcademic && (
                 <p className="text-xs font-mono text-indigo-400 mb-3">
-                  E[|η|] = b = Δf/ε → error ∝ 1/ε
+                  E[|η|] = b = Δf/ε — error decreases as ε increases
                 </p>
               )}
               {!isAcademic && (
@@ -236,7 +236,12 @@ export default function Simulator() {
                   How accuracy changes as you vary the privacy budget
                 </p>
               )}
-              <UtilityVsEpsilonChart baseRequest={baseRequest} />
+              <UtilityVsEpsilonChart
+                values={currentDataset.values}
+                queryType={queryType}
+                sensitivity={debouncedSensitivity}
+                seed={parsedSeed}
+              />
             </div>
           </div>
         )}
