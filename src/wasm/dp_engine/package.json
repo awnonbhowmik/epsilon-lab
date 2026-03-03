@@ -1,0 +1,17 @@
+{
+  "name": "dp_engine",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "dp_engine_bg.wasm",
+    "dp_engine.js",
+    "dp_engine_bg.js",
+    "dp_engine.d.ts"
+  ],
+  "main": "dp_engine.js",
+  "types": "dp_engine.d.ts",
+  "sideEffects": [
+    "./dp_engine.js",
+    "./snippets/*"
+  ]
+}
