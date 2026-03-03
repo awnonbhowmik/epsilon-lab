@@ -9,6 +9,7 @@ import ModeToggle from "./ModeToggle";
 import TheoryPanel from "./TheoryPanel";
 import References from "./References";
 import CompositionPanel from "./CompositionPanel";
+import PresetPicker from "./PresetPicker";
 import { DATASETS } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
 import type { Mechanism, QueryType, Topic, SimRequest, SimResponse } from "@/lib/dp/types";
@@ -32,10 +33,11 @@ const UtilityVsEpsilonChart = dynamic(
   { ssr: false }
 );
 
-export default function Simulator() {
+export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialRef = useRef(true);
+  const isEmbed = embedProp || searchParams.get("embed") === "1";
 
   // Decode URL state once on mount.
   const urlState = useMemo(
@@ -75,6 +77,7 @@ export default function Simulator() {
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
+  const [presetsOpen, setPresetsOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const urlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
@@ -217,50 +220,67 @@ export default function Simulator() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-indigo-400">
-            ε EpsilonLab
-          </h1>
-          <span className="hidden sm:block text-xs text-gray-500 font-mono">
-            Differential Privacy Teaching Simulator
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+      {!isEmbed && (
+        <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-indigo-400">
+              ε EpsilonLab
+            </h1>
+            <span className="hidden sm:block text-xs text-gray-500 font-mono">
+              Differential Privacy Teaching Simulator
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
             <button
-              onClick={handleCopyLink}
+              onClick={() => setPresetsOpen((o) => !o)}
               className="px-3 py-1.5 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              📋 Copy link
+              {presetsOpen ? "Close Presets" : "📚 Presets"}
             </button>
-            {copyToast && (
-              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-green-700 px-2 py-1 text-xs text-white shadow-lg z-50">
-                Link copied!
-              </span>
-            )}
+            <div className="relative">
+              <button
+                onClick={handleCopyLink}
+                className="px-3 py-1.5 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                📋 Copy link
+              </button>
+              {copyToast && (
+                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-green-700 px-2 py-1 text-xs text-white shadow-lg z-50">
+                  Link copied!
+                </span>
+              )}
+            </div>
+            <ModeToggle isAcademic={isAcademic} onChange={setIsAcademic} />
           </div>
-          <ModeToggle isAcademic={isAcademic} onChange={setIsAcademic} />
+        </header>
+      )}
+
+      {/* ── Preset picker panel ────────────────────────────────────────────── */}
+      {!isEmbed && presetsOpen && (
+        <div className="border-b border-gray-800 bg-gray-900/80 px-6 py-4 max-h-96 overflow-y-auto">
+          <PresetPicker compact />
         </div>
-      </header>
+      )}
 
       {/* ── Mode banner ────────────────────────────────────────────────────── */}
-      <div className="shrink-0 px-6 py-2.5 bg-gray-900 border-b border-gray-800 text-xs">
-        {!isAcademic ? (
-          <span className="text-gray-400">
-            <strong className="text-gray-200">Student mode —</strong> explore
-            how differential privacy adds calibrated noise to query answers.
-            Drag the ε slider to see the privacy–utility tradeoff live.
-          </span>
-        ) : (
-          <span className="font-mono text-indigo-300">
-            <strong>Academic mode —</strong>{" "}
-            {mechanism === "laplace"
-              ? "M(x) = f(x) + Lap(Δf/ε) · Pr[M(x)∈S] ≤ e^ε · Pr[M(x′)∈S] for all adjacent x, x′ and all measurable S ⊆ Y"
-              : "M(x) = f(x) + N(0, σ²) · (ε, δ)-DP with σ = Δf·√(2ln(1.25/δ)) / ε"}
-          </span>
-        )}
-      </div>
+      {!isEmbed && (
+        <div className="shrink-0 px-6 py-2.5 bg-gray-900 border-b border-gray-800 text-xs">
+          {!isAcademic ? (
+            <span className="text-gray-400">
+              <strong className="text-gray-200">Student mode —</strong> explore
+              how differential privacy adds calibrated noise to query answers.
+              Drag the ε slider to see the privacy–utility tradeoff live.
+            </span>
+          ) : (
+            <span className="font-mono text-indigo-300">
+              <strong>Academic mode —</strong>{" "}
+              {mechanism === "laplace"
+                ? "M(x) = f(x) + Lap(Δf/ε) · Pr[M(x)∈S] ≤ e^ε · Pr[M(x′)∈S] for all adjacent x, x′ and all measurable S ⊆ Y"
+                : "M(x) = f(x) + N(0, σ²) · (ε, δ)-DP with σ = Δf·√(2ln(1.25/δ)) / ε"}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Error banner ───────────────────────────────────────────────────── */}
       {error && (
@@ -314,7 +334,7 @@ export default function Simulator() {
               <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">
                 Simulation Results
               </h2>
-              {result && (
+              {result && !isEmbed && (
                 <div className="flex gap-2">
                   <button
                     onClick={handleExportPng}
@@ -416,8 +436,8 @@ export default function Simulator() {
           <CompositionPanel mechanism={mechanism} isAcademic={isAcademic} />
         )}
 
-        {/* References — always visible as collapsible in footer */}
-        <References />
+        {/* References — always visible as collapsible in footer (hidden in embed) */}
+        {!isEmbed && <References />}
 
         {/* Academic theory section */}
         {isAcademic && (

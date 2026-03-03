@@ -11,6 +11,15 @@ export default function Home() {
           <Link href="/simulator" className="text-indigo-400 hover:text-indigo-300 underline">
             Simulator
           </Link>
+          <Link href="/for-instructors" className="text-indigo-400 hover:text-indigo-300 underline">
+            For Instructors
+          </Link>
+          <Link href="/classroom-pack" className="text-indigo-400 hover:text-indigo-300 underline">
+            Classroom Pack
+          </Link>
+          <Link href="/embed" className="text-indigo-400 hover:text-indigo-300 underline">
+            Embed
+          </Link>
           <Link href="/lesson-plan" className="text-indigo-400 hover:text-indigo-300 underline">
             Instructor Lesson Plan
           </Link>
