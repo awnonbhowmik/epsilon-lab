@@ -27,6 +27,10 @@ const PARAM = {
   advancedSensitivity: "adv",
 } as const;
 
+/** Valid ranges — keep in sync with ControlPanel slider/input limits. */
+const MAX_EPSILON = 10;
+const MAX_RUNS = 10_000;
+
 const VALID_DATASETS = new Set<string>([
   "small_integers",
   "small_floats",
@@ -70,7 +74,7 @@ export function decodeShareState(
   const e = params.get(PARAM.epsilon);
   if (e !== null) {
     const n = Number(e);
-    if (Number.isFinite(n) && n > 0 && n <= 10) result.epsilon = n;
+    if (Number.isFinite(n) && n > 0 && n <= MAX_EPSILON) result.epsilon = n;
   }
 
   const s = params.get(PARAM.sensitivity);
@@ -82,7 +86,7 @@ export function decodeShareState(
   const r = params.get(PARAM.runs);
   if (r !== null) {
     const n = Number(r);
-    if (Number.isInteger(n) && n >= 1 && n <= 10000) result.runs = n;
+    if (Number.isInteger(n) && n >= 1 && n <= MAX_RUNS) result.runs = n;
   }
 
   const seed = params.get(PARAM.seed);
