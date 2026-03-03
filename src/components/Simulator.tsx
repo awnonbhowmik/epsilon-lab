@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import ControlPanel from "./ControlPanel";
 import ResultsPanel from "./ResultsPanel";
@@ -13,6 +14,10 @@ import type { QueryType, SimRequest, SimResponse } from "@/lib/dp/types";
 import { defaultSensitivity } from "@/lib/dp/utils";
 import { simulate } from "@/lib/dp/wasmClient";
 import { useDebouncedValue } from "@/lib/dp/useDebouncedValue";
+import {
+  encodeShareState,
+  decodeShareState,
+} from "@/lib/share/urlState";
 
 const NoisePdfChart = dynamic(() => import("./charts/NoisePdfChart"), {
   ssr: false,
@@ -27,21 +32,45 @@ const UtilityVsEpsilonChart = dynamic(
 );
 
 export default function Simulator() {
-  const [isAcademic, setIsAcademic] = useState(false);
-  const [datasetId, setDatasetId] = useState<DatasetId>("small_integers");
-  const [queryType, setQueryType] = useState<QueryType>("sum");
-  const [epsilon, setEpsilon] = useState(1.0);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initialRef = useRef(true);
+
+  // Decode URL state once on mount.
+  const urlState = useMemo(
+    () => decodeShareState(searchParams),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const [isAcademic, setIsAcademic] = useState(urlState.mode === "academic");
+  const [datasetId, setDatasetId] = useState<DatasetId>(
+    urlState.datasetId ?? "small_integers",
+  );
+  const [queryType, setQueryType] = useState<QueryType>(
+    urlState.queryType ?? "sum",
+  );
+  const [epsilon, setEpsilon] = useState(urlState.epsilon ?? 1.0);
   const [sensitivity, setSensitivity] = useState(() => {
-    const ds = DATASETS.find((d) => d.id === "small_integers")!;
-    return defaultSensitivity("sum", ds.values);
+    if (urlState.sensitivity !== undefined) return urlState.sensitivity;
+    const dsId = urlState.datasetId ?? "small_integers";
+    const qt = urlState.queryType ?? "sum";
+    const ds = DATASETS.find((d) => d.id === dsId)!;
+    return defaultSensitivity(qt, ds.values);
   });
-  const [runs, setRuns] = useState(100);
-  const [seed, setSeed] = useState("");
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [runs, setRuns] = useState(urlState.runs ?? 100);
+  const [seed, setSeed] = useState(urlState.seed ?? "");
+  const [advancedOpen, setAdvancedOpen] = useState(
+    urlState.advancedSensitivity ?? false,
+  );
   const [result, setResult] = useState<SimResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [copyToast, setCopyToast] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const urlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const chartsRef = useRef<HTMLDivElement>(null);
 
   // Debounce sensitivity changes so the utility curve isn't recomputed on every tick.
   const debouncedSensitivity = useDebouncedValue(sensitivity, 300);
@@ -58,10 +87,45 @@ export default function Simulator() {
     }
   }, [seed]);
 
-  // Reset sensitivity default when query type or dataset changes.
+  // Reset sensitivity default when query type or dataset changes (skip on initial mount if URL provided values).
   useEffect(() => {
+    if (initialRef.current) {
+      initialRef.current = false;
+      return;
+    }
     setSensitivity(defaultSensitivity(queryType, currentDataset.values));
   }, [queryType, datasetId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync state → URL (debounced, replace so no history entries).
+  useEffect(() => {
+    if (urlDebounceRef.current) clearTimeout(urlDebounceRef.current);
+    urlDebounceRef.current = setTimeout(() => {
+      const params = encodeShareState({
+        datasetId,
+        queryType,
+        epsilon,
+        sensitivity,
+        runs,
+        seed: seed || undefined,
+        mode: isAcademic ? "academic" : "student",
+        advancedSensitivity: advancedOpen,
+      });
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }, 400);
+    return () => {
+      if (urlDebounceRef.current) clearTimeout(urlDebounceRef.current);
+    };
+  }, [datasetId, queryType, epsilon, sensitivity, runs, seed, isAcademic, advancedOpen, router]);
+
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopyToast(true);
+      setTimeout(() => setCopyToast(false), 2000);
+    } catch {
+      /* clipboard API may fail in insecure contexts — ignore */
+    }
+  }, []);
 
   const runSimulation = useCallback(async () => {
     setIsRunning(true);
@@ -101,6 +165,40 @@ export default function Simulator() {
     };
   }, [runSimulation]);
 
+  const handleExportPng = useCallback(async () => {
+    const { toPng } = await import("html-to-image");
+    // Build a temporary off-screen container with metrics + charts + footer
+    const container = document.createElement("div");
+    container.style.cssText =
+      "background:#030712;color:#f3f4f6;padding:24px;width:1200px;position:absolute;left:-9999px;top:0";
+    document.body.appendChild(container);
+    try {
+      if (exportRef.current) {
+        container.appendChild(exportRef.current.cloneNode(true));
+      }
+      if (chartsRef.current) {
+        container.appendChild(chartsRef.current.cloneNode(true));
+      }
+      const footer = document.createElement("div");
+      footer.style.cssText =
+        "margin-top:16px;padding-top:12px;border-top:1px solid #374151;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af";
+      footer.innerHTML = `<span>EpsilonLab</span><span>${new Date().toLocaleDateString()}</span>`;
+      container.appendChild(footer);
+
+      const dataUrl = await toPng(container, { pixelRatio: 2 });
+      const link = document.createElement("a");
+      link.download = `epsilonlab_${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } finally {
+      document.body.removeChild(container);
+    }
+  }, []);
+
+  const handleExportPdf = useCallback(() => {
+    window.print();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -113,7 +211,22 @@ export default function Simulator() {
             Differential Privacy Teaching Simulator
           </span>
         </div>
-        <ModeToggle isAcademic={isAcademic} onChange={setIsAcademic} />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <button
+              onClick={handleCopyLink}
+              className="px-3 py-1.5 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              📋 Copy link
+            </button>
+            {copyToast && (
+              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-green-700 px-2 py-1 text-xs text-white shadow-lg z-50">
+                Link copied!
+              </span>
+            )}
+          </div>
+          <ModeToggle isAcademic={isAcademic} onChange={setIsAcademic} />
+        </div>
       </header>
 
       {/* ── Mode banner ────────────────────────────────────────────────────── */}
@@ -173,18 +286,38 @@ export default function Simulator() {
             />
           </aside>
 
-          {/* Right: results */}
+          {/* Right: results + export buttons */}
           <div className="flex-1 min-w-0 bg-gray-900 rounded-xl border border-gray-800 p-5">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">
-              Simulation Results
-            </h2>
-            <ResultsPanel result={result} isAcademic={isAcademic} />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">
+                Simulation Results
+              </h2>
+              {result && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleExportPng}
+                    className="px-2.5 py-1 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                  >
+                    Export PNG
+                  </button>
+                  <button
+                    onClick={handleExportPdf}
+                    className="px-2.5 py-1 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                  >
+                    Export PDF
+                  </button>
+                </div>
+              )}
+            </div>
+            <div ref={exportRef}>
+              <ResultsPanel result={result} isAcademic={isAcademic} />
+            </div>
           </div>
         </div>
 
-        {/* Charts row */}
+        {/* Charts row (inside exportRef for export) */}
         {result && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
                 Laplace Noise PDF
