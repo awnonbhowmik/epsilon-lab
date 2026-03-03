@@ -1,4 +1,71 @@
-import type { SimSummary } from "./types";
+import type { SimResponse, SimSummary } from "./types";
+
+/**
+ * Assert that `v` is a finite number; throw a descriptive error otherwise.
+ */
+export function assertFiniteNumber(name: string, v: unknown): asserts v is number {
+  if (typeof v !== "number" || !Number.isFinite(v)) {
+    throw new Error(`${name} must be a finite number, got ${String(v)}`);
+  }
+}
+
+/**
+ * Map a raw snake_case WASM result object to a camelCase `SimResponse`.
+ *
+ * Validates presence, types, and finiteness of every field so that downstream
+ * code can rely on the `SimResponse` contract.
+ */
+export function mapSimResponse(raw: Record<string, unknown>): SimResponse {
+  if (raw == null || typeof raw !== "object") {
+    throw new Error("WASM returned a non-object result");
+  }
+
+  // --- scalar fields ---------------------------------------------------
+  const trueValue = raw.true_value ?? raw.trueValue;
+  assertFiniteNumber("trueValue", trueValue);
+
+  const scale = raw.scale;
+  assertFiniteNumber("scale", scale);
+
+  // --- array fields ----------------------------------------------------
+  function mapNumberArray(snakeKey: string, camelKey: string): number[] {
+    const arr: unknown = raw[snakeKey] ?? raw[camelKey];
+    if (!Array.isArray(arr)) {
+      throw new Error(`${camelKey} must be an array`);
+    }
+    arr.forEach((v, i) => assertFiniteNumber(`${camelKey}[${i}]`, v));
+    return arr as number[];
+  }
+
+  const noisyValues = mapNumberArray("noisy_values", "noisyValues");
+  const absErrors = mapNumberArray("abs_errors", "absErrors");
+  const relErrorsPct = mapNumberArray("rel_errors_pct", "relErrorsPct");
+
+  // --- summary fields --------------------------------------------------
+  function mapSummary(snakeKey: string, camelKey: string): SimSummary {
+    const s: Record<string, unknown> = raw[snakeKey] as Record<string, unknown> ?? raw[camelKey] as Record<string, unknown>;
+    if (s == null || typeof s !== "object") {
+      throw new Error(`${camelKey} must be an object`);
+    }
+    for (const k of ["mean", "stddev", "min", "max", "median"] as const) {
+      assertFiniteNumber(`${camelKey}.${k}`, s[k]);
+    }
+    return s as SimSummary;
+  }
+
+  const noisySummary = mapSummary("noisy_summary", "noisySummary");
+  const absErrorSummary = mapSummary("abs_error_summary", "absErrorSummary");
+
+  return {
+    trueValue,
+    noisyValues,
+    absErrors,
+    relErrorsPct,
+    noisySummary,
+    absErrorSummary,
+    scale,
+  };
+}
 
 export function formatNumber(n: number, decimals = 4): string {
   if (!isFinite(n)) return "N/A";

@@ -43,3 +43,7 @@ export function getDataset(id: DatasetId): Dataset {
   if (!ds) throw new Error(`Unknown dataset: ${id}`);
   return ds;
 }
+
+export function getDefaultDataset(): Dataset {
+  return DATASETS[0];
+}
