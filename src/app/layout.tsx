@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "EpsilonLab — Differential Privacy Simulator",
-  description: "Interactive Differential Privacy teaching simulator using the Laplace mechanism",
+  description:
+    "Interactive platform for learning and demonstrating differential privacy.",
 };
 
 export default function RootLayout({

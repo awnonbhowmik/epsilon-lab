@@ -1,46 +1,155 @@
-import { Suspense } from "react";
-import Simulator from "@/components/Simulator";
 import Link from "next/link";
+import Footer from "@/components/Footer";
+
+const features = [
+  {
+    title: "Interactive Simulator",
+    desc: "Adjust ε, δ, sensitivity and observe results instantly.",
+  },
+  {
+    title: "Mechanism Comparison",
+    desc: "Explore Laplace and Gaussian mechanisms visually.",
+  },
+  {
+    title: "Classroom Presets",
+    desc: "Prebuilt demos for lectures and tutorials.",
+  },
+  {
+    title: "Export & Classroom Pack",
+    desc: "Generate PDFs and lecture-ready materials.",
+  },
+];
+
+const useCases = [
+  { role: "Instructors", desc: "Demonstrate DP concepts live" },
+  { role: "Students", desc: "Experiment and build intuition" },
+  { role: "Researchers", desc: "Illustrate privacy-utility tradeoffs" },
+];
 
 export default function Home() {
   return (
-    <Suspense>
-      <div className="min-h-screen bg-gray-950 text-gray-100">
-        {/* Landing nav links */}
-        <nav className="bg-gray-900 border-b border-gray-800 px-6 py-2 flex gap-4 text-xs">
-          <Link href="/simulator" className="text-indigo-400 hover:text-indigo-300 underline">
-            Simulator
-          </Link>
-          <Link href="/for-instructors" className="text-indigo-400 hover:text-indigo-300 underline">
-            For Instructors
-          </Link>
-          <Link href="/classroom-pack" className="text-indigo-400 hover:text-indigo-300 underline">
-            Classroom Pack
-          </Link>
-          <Link href="/embed" className="text-indigo-400 hover:text-indigo-300 underline">
-            Embed
-          </Link>
-          <Link href="/lesson-plan" className="text-indigo-400 hover:text-indigo-300 underline">
-            Instructor Lesson Plan
-          </Link>
-          <Link href="/compare" className="text-indigo-400 hover:text-indigo-300 underline">
-            Compare
-          </Link>
-          <Link href="/composition" className="text-indigo-400 hover:text-indigo-300 underline">
-            Composition
-          </Link>
-          <Link href="/appendix" className="text-indigo-400 hover:text-indigo-300 underline">
-            Appendix
-          </Link>
-          <Link href="/references" className="text-indigo-400 hover:text-indigo-300 underline">
-            References
-          </Link>
-          <Link href="/methodology" className="text-indigo-400 hover:text-indigo-300 underline">
-            Methodology
-          </Link>
-        </nav>
-        <Simulator />
-      </div>
-    </Suspense>
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+      {/* Nav */}
+      <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-baseline gap-1">
+          <span className="text-xl font-bold text-indigo-400">ε</span>
+          <span className="text-xl font-bold text-gray-100">EpsilonLab</span>
+        </Link>
+        <div className="flex gap-4 text-sm text-gray-400">
+          <Link href="/simulator" className="hover:text-indigo-300">Simulator</Link>
+          <Link href="/for-instructors" className="hover:text-indigo-300">Instructors</Link>
+          <Link href="/pricing" className="hover:text-indigo-300">Pricing</Link>
+          <Link href="/contact" className="hover:text-indigo-300">Contact</Link>
+        </div>
+      </nav>
+
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="max-w-4xl mx-auto px-6 py-20 text-center">
+          <h1 className="text-5xl font-extrabold tracking-tight mb-4">
+            <span className="text-indigo-400">Epsilon</span>Lab
+          </h1>
+          <p className="text-xl text-gray-300 mb-2">
+            Interactive Differential Privacy Simulation Platform
+          </p>
+          <p className="text-gray-400 max-w-2xl mx-auto mb-8">
+            Visualize privacy-utility tradeoffs, compare mechanisms, and
+            demonstrate differential privacy concepts in real time.
+          </p>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <Link
+              href="/simulator"
+              className="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors"
+            >
+              Open Simulator
+            </Link>
+            <Link
+              href="/for-instructors"
+              className="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors"
+            >
+              For Instructors
+            </Link>
+            <Link
+              href="/for-instructors"
+              className="px-6 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+            >
+              View Presets
+            </Link>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="max-w-5xl mx-auto px-6 py-16">
+          <h2 className="text-2xl font-bold text-center mb-10">Features</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="border border-gray-800 rounded-lg p-5 bg-gray-900/50"
+              >
+                <h3 className="font-semibold text-indigo-300 mb-2">{f.title}</h3>
+                <p className="text-sm text-gray-400">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Use Cases */}
+        <section className="max-w-4xl mx-auto px-6 py-16">
+          <h2 className="text-2xl font-bold text-center mb-10">Use Cases</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            {useCases.map((uc) => (
+              <div key={uc.role} className="p-6">
+                <h3 className="text-lg font-bold text-indigo-300 mb-2">
+                  {uc.role}
+                </h3>
+                <p className="text-sm text-gray-400">{uc.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Screenshots */}
+        <section className="max-w-5xl mx-auto px-6 py-16">
+          <h2 className="text-2xl font-bold text-center mb-10">
+            See It in Action
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {["Simulator", "Charts", "Composition Demo"].map((label) => (
+              <div
+                key={label}
+                className="border border-gray-800 rounded-lg bg-gray-900/50 h-48 flex items-center justify-center text-gray-600 text-sm"
+              >
+                {label} — screenshot placeholder
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="max-w-3xl mx-auto px-6 py-20 text-center">
+          <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-gray-400 mb-8">
+            Try the simulator now or reach out for an institutional license.
+          </p>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <Link
+              href="/simulator"
+              className="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors"
+            >
+              Try Simulator
+            </Link>
+            <Link
+              href="/contact"
+              className="px-6 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+            >
+              Contact for Institutional License
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
