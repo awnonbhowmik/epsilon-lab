@@ -17,9 +17,11 @@ export default function ClassroomPackPage() {
   const cancelRef = useState({ current: false })[0];
 
   const togglePreset = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : prev.length < 6 ? [...prev, id] : prev,
-    );
+    setSelected((prev) => {
+      if (prev.includes(id)) return prev.filter((p) => p !== id);
+      if (prev.length < 6) return [...prev, id];
+      return prev;
+    });
   };
 
   const selectedPresets = selected
@@ -66,7 +68,7 @@ export default function ClassroomPackPage() {
     const url = URL.createObjectURL(pdfBlob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `epsilonlab_classroom_pack_${Date.now()}.pdf`;
+    a.download = `epsilonlab_classroom_pack_${new Date().toISOString().slice(0, 10)}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };
