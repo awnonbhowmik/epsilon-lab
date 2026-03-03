@@ -5,15 +5,25 @@ import dynamic from "next/dynamic";
 import ControlPanel from "./ControlPanel";
 import ResultsPanel from "./ResultsPanel";
 import ModeToggle from "./ModeToggle";
+import TheoryPanel from "./TheoryPanel";
+import References from "./References";
 import { DATASETS } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
 import type { QueryType, SimRequest, SimResponse } from "@/lib/dp/types";
 import { defaultSensitivity } from "@/lib/dp/utils";
 import { simulate } from "@/lib/dp/wasmClient";
 
-const NoisePdfChart = dynamic(() => import("./charts/NoisePdfChart"), { ssr: false });
-const NoisyResultsHistogram = dynamic(() => import("./charts/NoisyResultsHistogram"), { ssr: false });
-const UtilityVsEpsilonChart = dynamic(() => import("./charts/UtilityVsEpsilonChart"), { ssr: false });
+const NoisePdfChart = dynamic(() => import("./charts/NoisePdfChart"), {
+  ssr: false,
+});
+const NoisyResultsHistogram = dynamic(
+  () => import("./charts/NoisyResultsHistogram"),
+  { ssr: false }
+);
+const UtilityVsEpsilonChart = dynamic(
+  () => import("./charts/UtilityVsEpsilonChart"),
+  { ssr: false }
+);
 
 export default function Simulator() {
   const [isAcademic, setIsAcademic] = useState(false);
@@ -34,34 +44,45 @@ export default function Simulator() {
 
   const currentDataset = DATASETS.find((d) => d.id === datasetId)!;
 
+  // Reset sensitivity default when query type or dataset changes.
   useEffect(() => {
     setSensitivity(defaultSensitivity(queryType, currentDataset.values));
-  }, [queryType, datasetId]);
+  }, [queryType, datasetId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const runSimulation = useCallback(async () => {
     setIsRunning(true);
     setError(null);
     try {
+      const parsedSeed = seed.trim()
+        ? (() => {
+            try {
+              return BigInt(seed.trim());
+            } catch {
+              throw new Error(
+                `Invalid seed "${seed.trim()}" — must be a non-negative integer`
+              );
+            }
+          })()
+        : undefined;
+
       const req: SimRequest = {
         values: currentDataset.values,
         queryType,
         epsilon,
         sensitivity,
         runs,
-        seed: seed.trim() ? (() => {
-            try { return BigInt(seed.trim()); }
-            catch { throw new Error(`Invalid seed: "${seed.trim()}" must be a valid integer`); }
-          })() : undefined,
+        seed: parsedSeed,
       };
       const res = await simulate(req);
       setResult(res);
-    } catch (e: any) {
-      setError(e?.message || "Unknown error");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setIsRunning(false);
     }
   }, [currentDataset, queryType, epsilon, sensitivity, runs, seed]);
 
+  // Auto-run with 300 ms debounce on any control change.
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -81,41 +102,56 @@ export default function Simulator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* Header */}
-      <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-indigo-400">ε EpsilonLab</h1>
-          <p className="text-xs text-gray-500">Differential Privacy Simulator</p>
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-2xl font-bold tracking-tight text-indigo-400">
+            ε EpsilonLab
+          </h1>
+          <span className="hidden sm:block text-xs text-gray-500 font-mono">
+            Differential Privacy Teaching Simulator
+          </span>
         </div>
         <ModeToggle isAcademic={isAcademic} onChange={setIsAcademic} />
       </header>
 
-      {/* Mode description */}
-      {!isAcademic && (
-        <div className="px-6 py-3 bg-gray-900 border-b border-gray-800 text-sm text-gray-400">
-          <strong className="text-gray-200">Student Mode:</strong> Explore how differential privacy adds noise to protect individual data. Adjust ε to see the privacy-utility tradeoff.
-        </div>
-      )}
-      {isAcademic && (
-        <div className="px-6 py-3 bg-gray-900 border-b border-gray-800 text-sm text-indigo-300 font-mono">
-          <strong>Academic Mode:</strong> M(x) = f(x) + Lap(Δf/ε) &nbsp;|&nbsp; ε-differential privacy guarantees Pr[M(x)∈S] ≤ e^ε · Pr[M(x&apos;)∈S] for all adjacent x, x&apos;
-        </div>
-      )}
+      {/* ── Mode banner ────────────────────────────────────────────────────── */}
+      <div className="shrink-0 px-6 py-2.5 bg-gray-900 border-b border-gray-800 text-xs">
+        {!isAcademic ? (
+          <span className="text-gray-400">
+            <strong className="text-gray-200">Student mode —</strong> explore
+            how differential privacy adds calibrated noise to query answers.
+            Drag the ε slider to see the privacy–utility tradeoff live.
+          </span>
+        ) : (
+          <span className="font-mono text-indigo-300">
+            <strong>Academic mode —</strong> M(x) = f(x) + Lap(Δf/ε) ·
+            Pr[M(x)∈S] ≤ e^ε · Pr[M(x′)∈S] for all adjacent x, x′ and all
+            measurable S ⊆ Y
+          </span>
+        )}
+      </div>
 
-      {/* Error */}
+      {/* ── Error banner ───────────────────────────────────────────────────── */}
       {error && (
-        <div className="mx-6 mt-4 p-3 bg-red-900/50 border border-red-700 rounded text-sm text-red-300">
-          <strong>Error:</strong> {error}
+        <div className="mx-6 mt-4 shrink-0 p-3 bg-red-900/40 border border-red-700/60 rounded-lg text-sm text-red-300 flex items-start gap-2">
+          <span className="text-red-400 font-bold shrink-0">⚠</span>
+          <span>
+            <strong className="text-red-200">Error:</strong> {error}
+          </span>
         </div>
       )}
 
-      {/* Main content */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Controls */}
-          <div className="lg:col-span-1 bg-gray-900 rounded-xl p-5 border border-gray-800">
-            <h2 className="text-base font-semibold text-gray-200 mb-4">Controls</h2>
+      {/* ── Main content ───────────────────────────────────────────────────── */}
+      <main className="flex-1 p-6 space-y-6">
+        {/* Top row: controls (fixed 320px) + results */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left: controls — fixed width on large screens */}
+          <aside className="w-full lg:w-80 shrink-0 bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">
+              Simulation Controls
+            </h2>
             <ControlPanel
               datasetId={datasetId}
               queryType={queryType}
@@ -135,42 +171,87 @@ export default function Simulator() {
               isRunning={isRunning}
               isAcademic={isAcademic}
             />
-          </div>
+          </aside>
 
-          {/* Right: Results */}
-          <div className="lg:col-span-2 bg-gray-900 rounded-xl p-5 border border-gray-800">
-            <h2 className="text-base font-semibold text-gray-200 mb-4">Results</h2>
+          {/* Right: results */}
+          <div className="flex-1 min-w-0 bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">
+              Simulation Results
+            </h2>
             <ResultsPanel result={result} isAcademic={isAcademic} />
           </div>
         </div>
 
-        {/* Charts */}
+        {/* Charts row */}
         {result && (
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
                 Laplace Noise PDF
-                {isAcademic && <span className="text-indigo-400 font-mono ml-2">f(x) = (1/2b)e^(-|x|/b)</span>}
               </h3>
+              {isAcademic && (
+                <p className="text-xs font-mono text-indigo-400 mb-3">
+                  p(η) = (1/2b) · exp(−|η|/b),&nbsp;&nbsp;b = {result.scale.toFixed(4)}
+                </p>
+              )}
+              {!isAcademic && (
+                <p className="text-xs text-gray-500 mb-3">
+                  Shape of the random noise added to the query answer
+                </p>
+              )}
               <NoisePdfChart scale={result.scale} trueValue={result.trueValue} />
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">
+
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
                 Noisy Results Distribution
-                {isAcademic && <span className="text-indigo-400 font-mono ml-2">histogram of f̃(x)</span>}
               </h3>
-              <NoisyResultsHistogram noisyValues={result.noisyValues} trueValue={result.trueValue} />
+              {isAcademic && (
+                <p className="text-xs font-mono text-indigo-400 mb-3">
+                  Histogram of M(x) = f(x) + η over {runs} runs
+                </p>
+              )}
+              {!isAcademic && (
+                <p className="text-xs text-gray-500 mb-3">
+                  Distribution of noisy answers across {runs} simulation runs
+                </p>
+              )}
+              <NoisyResultsHistogram
+                noisyValues={result.noisyValues}
+                trueValue={result.trueValue}
+              />
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">
+
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
                 Utility vs. ε
-                {isAcademic && <span className="text-indigo-400 font-mono ml-2">E[|error|] = b = Δf/ε</span>}
               </h3>
+              {isAcademic && (
+                <p className="text-xs font-mono text-indigo-400 mb-3">
+                  E[|η|] = b = Δf/ε → error ∝ 1/ε
+                </p>
+              )}
+              {!isAcademic && (
+                <p className="text-xs text-gray-500 mb-3">
+                  How accuracy changes as you vary the privacy budget
+                </p>
+              )}
               <UtilityVsEpsilonChart baseRequest={baseRequest} />
             </div>
           </div>
         )}
-      </div>
+
+        {/* Academic theory section */}
+        {isAcademic && (
+          <section className="space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">
+              Theoretical Background
+            </h2>
+            <TheoryPanel />
+            <References />
+          </section>
+        )}
+      </main>
     </div>
   );
 }

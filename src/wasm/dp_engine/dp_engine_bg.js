@@ -1,4 +1,17 @@
 /**
+ * Run a differentially private simulation using the Laplace mechanism.
+ *
+ * # Parameters
+ * - `values`      — dataset as a `Float64Array`
+ * - `query_type`  — `"sum"`, `"mean"`, or `"count"`
+ * - `epsilon`     — privacy budget ε > 0
+ * - `sensitivity` — global sensitivity Δf > 0
+ * - `runs`        — Monte-Carlo iterations (1 – 10 000)
+ * - `seed`        — optional u64 seed string for reproducibility
+ *
+ * # Returns
+ * A JS object matching `SimResponse` on success, or throws a descriptive
+ * string exception on invalid input or computation error.
  * @param {Float64Array} values
  * @param {string} query_type
  * @param {number} epsilon
@@ -13,7 +26,17 @@ export function simulate_query(values, query_type, epsilon, sensitivity, runs, s
     var ptr1 = isLikeNone(seed) ? 0 : passStringToWasm0(seed, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len1 = WASM_VECTOR_LEN;
     const ret = wasm.simulate_query(values, ptr0, len0, epsilon, sensitivity, runs, ptr1, len1);
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+export function __wbg_String_8564e559799eccda(arg0, arg1) {
+    const ret = String(arg1);
+    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
 }
 export function __wbg___wbindgen_is_function_3c846841762788c1(arg0) {
     const ret = typeof(arg0) === 'function';
@@ -58,6 +81,14 @@ export function __wbg_msCrypto_bd5a034af96bcba6(arg0) {
     const ret = arg0.msCrypto;
     return ret;
 }
+export function __wbg_new_a70fbab9066b301f() {
+    const ret = new Array();
+    return ret;
+}
+export function __wbg_new_ab79df5bd7c26067() {
+    const ret = new Object();
+    return ret;
+}
 export function __wbg_new_with_length_825018a1616e9e55(arg0) {
     const ret = new Uint8Array(arg0 >>> 0);
     return ret;
@@ -83,6 +114,12 @@ export function __wbg_require_b4edbdcf3e2a1ef0() { return handleError(function (
     const ret = module.require;
     return ret;
 }, arguments); }
+export function __wbg_set_282384002438957f(arg0, arg1, arg2) {
+    arg0[arg1 >>> 0] = arg2;
+}
+export function __wbg_set_6be42768c690e380(arg0, arg1, arg2) {
+    arg0[arg1] = arg2;
+}
 export function __wbg_static_accessor_GLOBAL_8adb955bd33fac2f() {
     const ret = typeof global === 'undefined' ? null : global;
     return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
@@ -107,12 +144,17 @@ export function __wbg_versions_276b2795b1c6a219(arg0) {
     const ret = arg0.versions;
     return ret;
 }
-export function __wbindgen_cast_0000000000000001(arg0, arg1) {
+export function __wbindgen_cast_0000000000000001(arg0) {
+    // Cast intrinsic for `F64 -> Externref`.
+    const ret = arg0;
+    return ret;
+}
+export function __wbindgen_cast_0000000000000002(arg0, arg1) {
     // Cast intrinsic for `Ref(Slice(U8)) -> NamedExternref("Uint8Array")`.
     const ret = getArrayU8FromWasm0(arg0, arg1);
     return ret;
 }
-export function __wbindgen_cast_0000000000000002(arg0, arg1) {
+export function __wbindgen_cast_0000000000000003(arg0, arg1) {
     // Cast intrinsic for `Ref(String) -> Externref`.
     const ret = getStringFromWasm0(arg0, arg1);
     return ret;
@@ -140,6 +182,14 @@ function getArrayF64FromWasm0(ptr, len) {
 function getArrayU8FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+
+let cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+    }
+    return cachedDataViewMemory0;
 }
 
 let cachedFloat64ArrayMemory0 = null;
@@ -211,6 +261,12 @@ function passStringToWasm0(arg, malloc, realloc) {
 
     WASM_VECTOR_LEN = offset;
     return ptr;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_externrefs.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
 }
 
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
