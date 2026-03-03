@@ -43,7 +43,7 @@ export function mapSimResponse(raw: Record<string, unknown>): SimResponse {
 
   // --- summary fields --------------------------------------------------
   function mapSummary(snakeKey: string, camelKey: string): SimSummary {
-    const s: Record<string, unknown> = raw[snakeKey] as Record<string, unknown> ?? raw[camelKey] as Record<string, unknown>;
+    const s: Record<string, unknown> = (raw[snakeKey] ?? raw[camelKey]) as Record<string, unknown>;
     if (s == null || typeof s !== "object") {
       throw new Error(`${camelKey} must be an object`);
     }
