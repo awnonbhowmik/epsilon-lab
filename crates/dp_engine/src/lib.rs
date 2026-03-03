@@ -83,10 +83,7 @@ pub fn true_sum(values: &[f64]) -> f64 {
 
 /// Compute the true arithmetic mean of `values`.  Returns 0.0 for empty slices.
 pub fn true_mean(values: &[f64]) -> f64 {
-    if values.is_empty() {
-        return 0.0;
-    }
-    values.iter().sum::<f64>() / values.len() as f64
+    mean(values)
 }
 
 /// Return the count of `values` as f64.
