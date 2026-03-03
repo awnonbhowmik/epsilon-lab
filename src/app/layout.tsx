@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,6 +8,9 @@ export const metadata: Metadata = {
     "Interactive platform for learning and demonstrating differential privacy.",
 };
 
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+const isProduction = process.env.NODE_ENV === "production";
+
 export default function RootLayout({
   children,
 }: {
@@ -14,7 +18,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-950 text-gray-100">{children}</body>
+      <body className="bg-gray-950 text-gray-100">
+        {children}
+        {/*
+          Privacy-friendly analytics (Plausible) — loaded only when:
+            1. NODE_ENV is "production"
+            2. NEXT_PUBLIC_PLAUSIBLE_DOMAIN is set
+          No cookies, no personal data. Users can opt out by setting
+          localStorage.plausible_ignore = "true" in their browser console.
+        */}
+        {isProduction && plausibleDomain && (
+          <Script
+            defer
+            data-domain={plausibleDomain}
+            src="https://plausible.io/js/script.js"
+            strategy="afterInteractive"
+          />
+        )}
+      </body>
     </html>
   );
 }

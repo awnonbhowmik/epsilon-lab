@@ -55,6 +55,34 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-xl font-semibold text-indigo-300 mb-3">
+            Analytics
+          </h2>
+          <p className="text-sm text-gray-300 leading-relaxed mb-3">
+            In production, EpsilonLab may use{" "}
+            <a
+              href="https://plausible.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-400 hover:text-indigo-300 underline"
+            >
+              Plausible Analytics
+            </a>
+            , a lightweight, cookie-free, privacy-first analytics service. It
+            collects only anonymous, aggregate page-view counts — no personal
+            data, no tracking cookies, and no cross-site tracking.
+          </p>
+          <p className="text-sm text-gray-300 leading-relaxed">
+            <strong>Opt out:</strong> To disable analytics in your browser, open
+            your browser console and run{" "}
+            <code className="text-indigo-300 bg-gray-900 px-1 rounded">
+              localStorage.plausible_ignore = &quot;true&quot;
+            </code>
+            . Analytics will no longer be recorded for your visits.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold text-indigo-300 mb-3">
             Contact
           </h2>
           <p className="text-sm text-gray-300 leading-relaxed">
