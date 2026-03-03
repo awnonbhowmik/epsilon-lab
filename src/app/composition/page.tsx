@@ -114,7 +114,7 @@ export default function CompositionPage() {
                 \u03B5_total = \u03A3 \u03B5_i, \u03B4_total = \u03A3 \u03B4_i
               </p>
               <p className="text-xs text-gray-500">
-                Reference: Dwork, C., McSherry, F., Nissim, K., &amp; Smith, A. (2006).
+                Reference: Dwork, C., McSherry, F., Nissim, K., & Smith, A. (2006).
               </p>
             </div>
 
@@ -262,10 +262,10 @@ export default function CompositionPage() {
                 Basic composition adds privacy costs linearly: \u03B5_total = k\u03B5. This is a valid upper bound but can be loose when the number of queries k is large.
               </p>
               <p className="text-sm text-gray-400">
-                The <em>advanced composition theorem</em> (Dwork, Rothblum, &amp; Vadhan, 2010) shows that for k-fold adaptive composition of (\u03B5, \u03B4)-DP mechanisms, the total privacy cost grows proportionally to \u221Ak rather than k. Specifically, for any \u03B4&apos; &gt; 0, the composed mechanism satisfies (\u03B5&apos;, k\u03B4 + \u03B4&apos;)-DP where:
+                The <em>advanced composition theorem</em> (Dwork, Rothblum, & Vadhan, 2010) shows that for k-fold adaptive composition of (\u03B5, \u03B4)-DP mechanisms, the total privacy cost grows proportionally to \u221Ak rather than k. Specifically, for any \u03B4\u2032 &gt; 0, the composed mechanism satisfies (\u03B5\u2032, k\u03B4 + \u03B4\u2032)-DP where:
               </p>
               <p className="text-sm font-mono text-indigo-200">
-                \u03B5&apos; = \u03B5\u221A(2k ln(1/\u03B4&apos;)) + k\u03B5(e^\u03B5 - 1)
+                \u03B5\u2032 = \u03B5\u221A(2k ln(1/\u03B4\u2032)) + k\u03B5(e^\u03B5 - 1)
               </p>
               <p className="text-sm text-gray-400">
                 This means that repeated access to a dataset is less costly than the basic bound suggests, which is critical for practical applications such as iterative model training.
