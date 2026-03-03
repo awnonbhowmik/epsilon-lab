@@ -23,6 +23,21 @@ export default function Home() {
           <Link href="/lesson-plan" className="text-indigo-400 hover:text-indigo-300 underline">
             Instructor Lesson Plan
           </Link>
+          <Link href="/compare" className="text-indigo-400 hover:text-indigo-300 underline">
+            Compare
+          </Link>
+          <Link href="/composition" className="text-indigo-400 hover:text-indigo-300 underline">
+            Composition
+          </Link>
+          <Link href="/appendix" className="text-indigo-400 hover:text-indigo-300 underline">
+            Appendix
+          </Link>
+          <Link href="/references" className="text-indigo-400 hover:text-indigo-300 underline">
+            References
+          </Link>
+          <Link href="/methodology" className="text-indigo-400 hover:text-indigo-300 underline">
+            Methodology
+          </Link>
         </nav>
         <Simulator />
       </div>
