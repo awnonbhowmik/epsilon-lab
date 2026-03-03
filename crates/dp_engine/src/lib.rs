@@ -76,18 +76,36 @@ pub struct SimResponse {
 
 // ── Pure DP mathematics ───────────────────────────────────────────────────────
 
+/// Compute the true sum of `values`.
+pub fn true_sum(values: &[f64]) -> f64 {
+    values.iter().sum()
+}
+
+/// Compute the true arithmetic mean of `values`.  Returns 0.0 for empty slices.
+pub fn true_mean(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    values.iter().sum::<f64>() / values.len() as f64
+}
+
+/// Return the count of `values` as f64.
+pub fn true_count(values: &[f64]) -> f64 {
+    values.len() as f64
+}
+
 /// Compute the exact (non-private) query answer.
 pub(crate) fn true_query(values: &[f64], kind: QueryKind) -> f64 {
     match kind {
-        QueryKind::Sum => values.iter().sum(),
-        QueryKind::Mean => {
-            if values.is_empty() {
-                return 0.0;
-            }
-            values.iter().sum::<f64>() / values.len() as f64
-        }
-        QueryKind::Count => values.len() as f64,
+        QueryKind::Sum => true_sum(values),
+        QueryKind::Mean => true_mean(values),
+        QueryKind::Count => true_count(values),
     }
+}
+
+/// Return `true_value + Laplace(0, scale)` — a single DP-noised answer.
+pub fn dp_query(true_value: f64, scale: f64, rng: &mut impl Rng) -> f64 {
+    true_value + laplace_sample(scale, rng)
 }
 
 /// Draw a single sample from Laplace(0, `scale`) via the inverse-CDF method.
@@ -136,50 +154,65 @@ pub(crate) fn laplace_sample(scale: f64, rng: &mut impl Rng) -> f64 {
     }
 }
 
-/// Compute descriptive statistics (mean, stddev, min, max, median) in one pass.
-pub(crate) fn compute_summary(values: &[f64]) -> SimSummary {
+// ── Summary statistics helpers ─────────────────────────────────────────────────
+
+/// Arithmetic mean.  Returns 0.0 for empty slices.
+pub fn mean(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    values.iter().sum::<f64>() / values.len() as f64
+}
+
+/// Population standard deviation.  Returns 0.0 for empty slices.
+pub fn stddev(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    let m = mean(values);
+    let variance = values.iter().map(|v| (v - m).powi(2)).sum::<f64>() / values.len() as f64;
+    variance.sqrt()
+}
+
+/// Minimum value.  Returns 0.0 for empty slices.
+pub fn min(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    values.iter().cloned().fold(f64::INFINITY, f64::min)
+}
+
+/// Maximum value.  Returns 0.0 for empty slices.
+pub fn max(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    values.iter().cloned().fold(f64::NEG_INFINITY, f64::max)
+}
+
+/// Median value.  Uses a sorted copy of `values`.  Returns 0.0 for empty slices.
+pub fn median(values: &[f64]) -> f64 {
     let n = values.len();
     if n == 0 {
-        return SimSummary {
-            mean: 0.0,
-            stddev: 0.0,
-            min: 0.0,
-            max: 0.0,
-            median: 0.0,
-        };
+        return 0.0;
     }
-    let n_f = n as f64;
-    let mean = values.iter().sum::<f64>() / n_f;
-    let variance = values.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / n_f;
-    let stddev = variance.sqrt();
-
-    let min = values
-        .iter()
-        .cloned()
-        .fold(f64::INFINITY, f64::min);
-    let max = values
-        .iter()
-        .cloned()
-        .fold(f64::NEG_INFINITY, f64::max);
-
-    // Median requires a sorted copy.
     let mut sorted = values.to_vec();
-    sorted.sort_by(|a, b| {
-        a.partial_cmp(b)
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
-    let median = if n % 2 == 0 {
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    if n % 2 == 0 {
         (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
     } else {
         sorted[n / 2]
-    };
+    }
+}
 
+/// Compute descriptive statistics (mean, stddev, min, max, median) using helpers.
+pub(crate) fn compute_summary(values: &[f64]) -> SimSummary {
     SimSummary {
-        mean,
-        stddev,
-        min,
-        max,
-        median,
+        mean: mean(values),
+        stddev: stddev(values),
+        min: min(values),
+        max: max(values),
+        median: median(values),
     }
 }
 
@@ -291,7 +324,7 @@ pub fn simulate_query(
     let mut rel_errors_pct = Vec::with_capacity(cap);
 
     for _ in 0..runs {
-        let noisy = true_val + laplace_sample(scale, &mut rng);
+        let noisy = dp_query(true_val, scale, &mut rng);
         let abs_err = (noisy - true_val).abs();
         let rel_err = if true_val.abs() > 1e-10 {
             abs_err / true_val.abs() * 100.0
@@ -488,6 +521,82 @@ mod tests {
         assert_eq!(s.min, 0.0);
         assert_eq!(s.max, 0.0);
         assert_eq!(s.median, 0.0);
+    }
+
+    // ── Standalone true_* functions ──────────────────────────────────────────
+
+    #[test]
+    fn test_true_sum() {
+        assert_eq!(true_sum(&[1.0, 2.0, 3.0, 4.0, 5.0]), 15.0);
+        assert_eq!(true_sum(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_true_mean() {
+        assert!((true_mean(&[1.0, 2.0, 3.0, 4.0, 5.0]) - 3.0).abs() < 1e-12);
+        assert_eq!(true_mean(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_true_count() {
+        assert_eq!(true_count(&[10.0, 20.0, 30.0]), 3.0);
+        assert_eq!(true_count(&[]), 0.0);
+    }
+
+    // ── dp_query ──────────────────────────────────────────────────────────────
+
+    #[test]
+    fn dp_query_adds_noise() {
+        let mut rng = seeded();
+        let result = dp_query(100.0, 1.0, &mut rng);
+        // Result should differ from true value (with overwhelming probability)
+        assert!((result - 100.0).abs() > 1e-15);
+    }
+
+    #[test]
+    fn dp_query_deterministic_with_seed() {
+        let run = |seed: u64| -> f64 {
+            let mut rng = ChaCha20Rng::seed_from_u64(seed);
+            dp_query(50.0, 2.0, &mut rng)
+        };
+        assert_eq!(run(SEED), run(SEED));
+    }
+
+    // ── Standalone stat helpers ───────────────────────────────────────────────
+
+    #[test]
+    fn test_mean_helper() {
+        assert!((mean(&[1.0, 2.0, 3.0, 4.0, 5.0]) - 3.0).abs() < 1e-12);
+        assert_eq!(mean(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_stddev_helper() {
+        // Population stddev of [1,2,3,4,5] = sqrt(2)
+        assert!((stddev(&[1.0, 2.0, 3.0, 4.0, 5.0]) - 2.0_f64.sqrt()).abs() < 1e-10);
+        assert_eq!(stddev(&[42.0]), 0.0);
+        assert_eq!(stddev(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_min_helper() {
+        assert_eq!(min(&[3.0, 1.0, 4.0, 1.5, 2.0]), 1.0);
+        assert_eq!(min(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_max_helper() {
+        assert_eq!(max(&[3.0, 1.0, 4.0, 1.5, 2.0]), 4.0);
+        assert_eq!(max(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_median_helper() {
+        // Odd number of elements
+        assert_eq!(median(&[3.0, 1.0, 2.0]), 2.0);
+        // Even number of elements
+        assert_eq!(median(&[4.0, 1.0, 3.0, 2.0]), 2.5);
+        assert_eq!(median(&[]), 0.0);
     }
 
     // ── QueryKind::from_str ───────────────────────────────────────────────────
