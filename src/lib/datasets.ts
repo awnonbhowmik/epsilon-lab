@@ -43,3 +43,8 @@ export function getDataset(id: DatasetId): Dataset {
   if (!ds) throw new Error(`Unknown dataset: ${id}`);
   return ds;
 }
+
+export function getDefaultDataset(): Dataset {
+  if (DATASETS.length === 0) throw new Error("No datasets available");
+  return DATASETS[0];
+}

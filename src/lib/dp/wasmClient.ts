@@ -1,4 +1,5 @@
 import type { SimRequest, SimResponse } from "./types";
+import { mapSimResponse } from "./utils";
 
 // Module-level singleton: the WASM module is initialised once per page load.
 let wasmReady: Promise<void> | null = null;
@@ -34,6 +35,9 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
   const mod = await initWasm();
 
   // Validate inputs on the TS side before crossing the WASM boundary.
+  if (!Array.isArray(req.values) || req.values.length === 0) {
+    throw new Error("values must be a non-empty array");
+  }
   if (!Number.isFinite(req.epsilon) || req.epsilon <= 0) {
     throw new Error("epsilon must be a finite positive number");
   }
@@ -49,8 +53,8 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
     req.seed !== undefined ? req.seed.toString() : null;
 
   // simulate_query throws a JS exception on invalid input (Result::Err in Rust)
-  // and returns a plain JS object matching SimResponse on success.
-  const result: SimResponse = mod.simulate_query(
+  // and returns a plain JS object on success.
+  const raw = mod.simulate_query(
     float64Array,
     req.queryType,
     req.epsilon,
@@ -59,5 +63,5 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
     seedStr
   );
 
-  return result;
+  return mapSimResponse(raw);
 }
