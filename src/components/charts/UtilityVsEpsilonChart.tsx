@@ -41,8 +41,8 @@ export default function UtilityVsEpsilonChart({ baseRequest }: Props) {
           points.push({ epsilon: eps, meanAbsError: res.absErrorSummary.mean });
         }
         setData(points);
-      } catch {
-        // silently fail
+      } catch (err) {
+        console.error("UtilityVsEpsilonChart: simulation failed", err);
       } finally {
         setLoading(false);
       }

@@ -18,8 +18,10 @@ interface Props {
 
 function buildHistogram(values: number[], bins = 30) {
   if (values.length === 0) return [];
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const { min, max } = values.reduce(
+    (acc, v) => ({ min: v < acc.min ? v : acc.min, max: v > acc.max ? v : acc.max }),
+    { min: values[0], max: values[0] }
+  );
   const range = max - min || 1;
   const binWidth = range / bins;
   const counts = new Array(bins).fill(0);

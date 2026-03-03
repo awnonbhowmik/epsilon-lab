@@ -48,7 +48,10 @@ export default function Simulator() {
         epsilon,
         sensitivity,
         runs,
-        seed: seed.trim() ? BigInt(seed.trim()) : undefined,
+        seed: seed.trim() ? (() => {
+            try { return BigInt(seed.trim()); }
+            catch { throw new Error(`Invalid seed: "${seed.trim()}" must be a valid integer`); }
+          })() : undefined,
       };
       const res = await simulate(req);
       setResult(res);
