@@ -1,10 +1,22 @@
 import { Suspense } from "react";
 import Simulator from "@/components/Simulator";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <Suspense>
-      <Simulator />
+      <div className="min-h-screen bg-gray-950 text-gray-100">
+        {/* Landing nav links */}
+        <nav className="bg-gray-900 border-b border-gray-800 px-6 py-2 flex gap-4 text-xs">
+          <Link href="/simulator" className="text-indigo-400 hover:text-indigo-300 underline">
+            Simulator
+          </Link>
+          <Link href="/lesson-plan" className="text-indigo-400 hover:text-indigo-300 underline">
+            Instructor Lesson Plan
+          </Link>
+        </nav>
+        <Simulator />
+      </div>
     </Suspense>
   );
 }

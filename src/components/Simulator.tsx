@@ -8,9 +8,10 @@ import ResultsPanel from "./ResultsPanel";
 import ModeToggle from "./ModeToggle";
 import TheoryPanel from "./TheoryPanel";
 import References from "./References";
+import CompositionPanel from "./CompositionPanel";
 import { DATASETS } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
-import type { QueryType, SimRequest, SimResponse } from "@/lib/dp/types";
+import type { Mechanism, QueryType, Topic, SimRequest, SimResponse } from "@/lib/dp/types";
 import { defaultSensitivity } from "@/lib/dp/utils";
 import { simulate } from "@/lib/dp/wasmClient";
 import { useDebouncedValue } from "@/lib/dp/useDebouncedValue";
@@ -50,7 +51,14 @@ export default function Simulator() {
   const [queryType, setQueryType] = useState<QueryType>(
     urlState.queryType ?? "sum",
   );
+  const [mechanism, setMechanism] = useState<Mechanism>(
+    urlState.mechanism ?? "laplace",
+  );
+  const [topic, setTopic] = useState<Topic>(
+    urlState.topic ?? "single_query",
+  );
   const [epsilon, setEpsilon] = useState(urlState.epsilon ?? 1.0);
+  const [delta, setDelta] = useState(urlState.delta ?? 1e-5);
   const [sensitivity, setSensitivity] = useState(() => {
     if (urlState.sensitivity !== undefined) return urlState.sensitivity;
     const dsId = urlState.datasetId ?? "small_integers";
@@ -109,13 +117,16 @@ export default function Simulator() {
         seed: seed || undefined,
         mode: isAcademic ? "academic" : "student",
         advancedSensitivity: advancedOpen,
+        mechanism,
+        topic,
+        delta: mechanism === "gaussian" ? delta : undefined,
       });
       router.replace(`?${params.toString()}`, { scroll: false });
     }, 400);
     return () => {
       if (urlDebounceRef.current) clearTimeout(urlDebounceRef.current);
     };
-  }, [datasetId, queryType, epsilon, sensitivity, runs, seed, isAcademic, advancedOpen, router]);
+  }, [datasetId, queryType, epsilon, sensitivity, runs, seed, isAcademic, advancedOpen, mechanism, topic, delta, router]);
 
   const handleCopyLink = useCallback(async () => {
     try {
@@ -140,10 +151,12 @@ export default function Simulator() {
       const req: SimRequest = {
         values: currentDataset.values,
         queryType,
+        mechanism,
         epsilon,
         sensitivity,
         runs,
         seed: parsedSeed,
+        delta: mechanism === "gaussian" ? delta : undefined,
       };
       const res = await simulate(req);
       setResult(res);
@@ -152,7 +165,7 @@ export default function Simulator() {
     } finally {
       setIsRunning(false);
     }
-  }, [currentDataset, queryType, epsilon, sensitivity, runs, seed, parsedSeed]);
+  }, [currentDataset, queryType, mechanism, epsilon, sensitivity, runs, seed, parsedSeed, delta]);
 
   // Auto-run with 300 ms debounce on any control change.
   useEffect(() => {
@@ -199,6 +212,8 @@ export default function Simulator() {
     window.print();
   }, []);
 
+  const pdfTitle = mechanism === "gaussian" ? "Gaussian Noise PDF" : "Laplace Noise PDF";
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -239,9 +254,10 @@ export default function Simulator() {
           </span>
         ) : (
           <span className="font-mono text-indigo-300">
-            <strong>Academic mode —</strong> M(x) = f(x) + Lap(Δf/ε) ·
-            Pr[M(x)∈S] ≤ e^ε · Pr[M(x′)∈S] for all adjacent x, x′ and all
-            measurable S ⊆ Y
+            <strong>Academic mode —</strong>{" "}
+            {mechanism === "laplace"
+              ? "M(x) = f(x) + Lap(Δf/ε) · Pr[M(x)∈S] ≤ e^ε · Pr[M(x′)∈S] for all adjacent x, x′ and all measurable S ⊆ Y"
+              : "M(x) = f(x) + N(0, σ²) · (ε, δ)-DP with σ = Δf·√(2ln(1.25/δ)) / ε"}
           </span>
         )}
       </div>
@@ -268,14 +284,20 @@ export default function Simulator() {
             <ControlPanel
               datasetId={datasetId}
               queryType={queryType}
+              mechanism={mechanism}
+              topic={topic}
               epsilon={epsilon}
+              delta={delta}
               sensitivity={sensitivity}
               runs={runs}
               seed={seed}
               advancedOpen={advancedOpen}
               onDatasetChange={setDatasetId}
               onQueryChange={setQueryType}
+              onMechanismChange={setMechanism}
+              onTopicChange={setTopic}
               onEpsilonChange={setEpsilon}
+              onDeltaChange={setDelta}
               onSensitivityChange={setSensitivity}
               onRunsChange={setRuns}
               onSeedChange={setSeed}
@@ -310,21 +332,23 @@ export default function Simulator() {
               )}
             </div>
             <div ref={exportRef}>
-              <ResultsPanel result={result} isAcademic={isAcademic} />
+              <ResultsPanel result={result} isAcademic={isAcademic} mechanism={mechanism} />
             </div>
           </div>
         </div>
 
-        {/* Charts row (inside exportRef for export) */}
-        {result && (
+        {/* Charts row */}
+        {result && topic === "single_query" && (
           <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
-                Laplace Noise PDF
+                {pdfTitle}
               </h3>
               {isAcademic && (
                 <p className="text-xs font-mono text-indigo-400 mb-3">
-                  b = Δf/ε = {result.scale.toFixed(4)},&nbsp;&nbsp;p(η) = (1/2b) · exp(−|η|/b)
+                  {mechanism === "laplace"
+                    ? `b = Δf/ε = ${result.scale.toFixed(4)},  p(η) = (1/2b) · exp(−|η|/b)`
+                    : `σ = ${result.sigma?.toFixed(4)},  p(η) = (1/(σ√(2π))) · exp(−η²/(2σ²))`}
                 </p>
               )}
               {!isAcademic && (
@@ -332,7 +356,11 @@ export default function Simulator() {
                   Shape of the random noise added to the query answer
                 </p>
               )}
-              <NoisePdfChart scale={result.scale} />
+              <NoisePdfChart
+                scale={result.scale}
+                mechanism={mechanism}
+                sigma={result.sigma}
+              />
             </div>
 
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
@@ -361,7 +389,9 @@ export default function Simulator() {
               </h3>
               {isAcademic && (
                 <p className="text-xs font-mono text-indigo-400 mb-3">
-                  E[|η|] = b = Δf/ε — error decreases as ε increases
+                  {mechanism === "laplace"
+                    ? "E[|η|] = b = Δf/ε — error decreases as ε increases"
+                    : `σ = Δf·√(2ln(1.25/δ))/ε, δ = ${delta} — error decreases as ε increases`}
                 </p>
               )}
               {!isAcademic && (
@@ -374,10 +404,20 @@ export default function Simulator() {
                 queryType={queryType}
                 sensitivity={debouncedSensitivity}
                 seed={parsedSeed}
+                mechanism={mechanism}
+                delta={mechanism === "gaussian" ? delta : undefined}
               />
             </div>
           </div>
         )}
+
+        {/* Composition topic view */}
+        {topic === "composition" && (
+          <CompositionPanel mechanism={mechanism} isAcademic={isAcademic} />
+        )}
+
+        {/* References — always visible as collapsible in footer */}
+        <References />
 
         {/* Academic theory section */}
         {isAcademic && (
@@ -386,7 +426,6 @@ export default function Simulator() {
               Theoretical Background
             </h2>
             <TheoryPanel />
-            <References />
           </section>
         )}
       </main>

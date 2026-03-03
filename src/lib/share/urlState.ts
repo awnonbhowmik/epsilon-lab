@@ -1,5 +1,5 @@
 import type { DatasetId } from "@/lib/datasets";
-import type { QueryType } from "@/lib/dp/types";
+import type { Mechanism, QueryType, Topic } from "@/lib/dp/types";
 
 /**
  * Simulator state that can be shared via URL query parameters.
@@ -13,6 +13,9 @@ export type ShareState = {
   seed?: string;
   mode: "student" | "academic";
   advancedSensitivity: boolean;
+  mechanism: Mechanism;
+  topic: Topic;
+  delta?: number;
 };
 
 /* ── Short parameter names (keeps URLs readable) ────────────── */
@@ -25,6 +28,9 @@ const PARAM = {
   seed: "seed",
   mode: "m",
   advancedSensitivity: "adv",
+  mechanism: "mech",
+  topic: "topic",
+  delta: "dl",
 } as const;
 
 /** Valid ranges — keep in sync with ControlPanel slider/input limits. */
@@ -39,6 +45,8 @@ const VALID_DATASETS = new Set<string>([
 ]);
 const VALID_QUERIES = new Set<string>(["sum", "mean", "count"]);
 const VALID_MODES = new Set<string>(["student", "academic"]);
+const VALID_MECHANISMS = new Set<string>(["laplace", "gaussian"]);
+const VALID_TOPICS = new Set<string>(["single_query", "composition"]);
 
 /**
  * Encode simulator state into URL search parameters.
@@ -53,6 +61,9 @@ export function encodeShareState(state: ShareState): URLSearchParams {
   if (state.seed) p.set(PARAM.seed, state.seed);
   p.set(PARAM.mode, state.mode);
   p.set(PARAM.advancedSensitivity, state.advancedSensitivity ? "1" : "0");
+  p.set(PARAM.mechanism, state.mechanism);
+  p.set(PARAM.topic, state.topic === "single_query" ? "single" : "comp");
+  if (state.delta != null) p.set(PARAM.delta, String(state.delta));
   return p;
 }
 
@@ -98,6 +109,19 @@ export function decodeShareState(
   const adv = params.get(PARAM.advancedSensitivity);
   if (adv === "1") result.advancedSensitivity = true;
   else if (adv === "0") result.advancedSensitivity = false;
+
+  const mech = params.get(PARAM.mechanism);
+  if (mech && VALID_MECHANISMS.has(mech)) result.mechanism = mech as Mechanism;
+
+  const topic = params.get(PARAM.topic);
+  if (topic === "single") result.topic = "single_query";
+  else if (topic === "comp") result.topic = "composition";
+
+  const dl = params.get(PARAM.delta);
+  if (dl !== null) {
+    const n = Number(dl);
+    if (Number.isFinite(n) && n > 0 && n < 1) result.delta = n;
+  }
 
   return result;
 }

@@ -5,14 +5,22 @@
  * The camelCase naming matches Rust's #[serde(rename_all = "camelCase")].
  */
 
-/** The three query functions supported by the Laplace mechanism. */
+/** The three query functions supported by both mechanisms. */
 export type QueryType = "sum" | "mean" | "count";
+
+/** Noise mechanism used by the DP engine. */
+export type Mechanism = "laplace" | "gaussian";
+
+/** Topic / view mode for the simulator. */
+export type Topic = "single_query" | "composition";
 
 /** Parameters sent to the WASM simulate_query function. */
 export type SimRequest = {
   /** Dataset values (mapped to Float64Array at the WASM boundary). */
   values: number[];
   queryType: QueryType;
+  /** Noise mechanism (default: "laplace"). */
+  mechanism?: Mechanism;
   /** Privacy budget ε > 0.  Smaller = more privacy, more noise. */
   epsilon: number;
   /** Global sensitivity Δf > 0.  Max |f(x) − f(x′)| over adjacent datasets. */
@@ -25,6 +33,8 @@ export type SimRequest = {
    * Omit (or leave undefined) for secure random sampling.
    */
   seed?: bigint;
+  /** Failure probability δ ∈ (0, 1).  Required when mechanism = "gaussian". */
+  delta?: number;
 };
 
 /**
@@ -54,6 +64,12 @@ export type SimResponse = {
   relErrorsPct: number[];
   noisySummary: SimSummary;
   absErrorSummary: SimSummary;
-  /** Laplace scale b = Δf / ε. */
+  /** Laplace scale b = Δf / ε (always present). */
   scale: number;
+  /** Mechanism that produced this result. */
+  mechanism: Mechanism;
+  /** Gaussian σ — present when mechanism = "gaussian". */
+  sigma?: number;
+  /** δ used — present when mechanism = "gaussian". */
+  delta?: number;
 };

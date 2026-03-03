@@ -1,4 +1,4 @@
-import type { SimResponse, SimSummary } from "./types";
+import type { Mechanism, SimResponse, SimSummary } from "./types";
 
 /**
  * Assert that `v` is a finite number; throw a descriptive error otherwise.
@@ -26,6 +26,21 @@ export function mapSimResponse(raw: Record<string, unknown>): SimResponse {
 
   const scale = raw.scale;
   assertFiniteNumber("scale", scale);
+
+  // --- mechanism field --------------------------------------------------
+  const mechanism = (raw.mechanism ?? "laplace") as Mechanism;
+
+  // --- optional gaussian fields ----------------------------------------
+  let sigma: number | undefined;
+  if (raw.sigma != null) {
+    assertFiniteNumber("sigma", raw.sigma);
+    sigma = raw.sigma;
+  }
+  let delta: number | undefined;
+  if (raw.delta != null) {
+    assertFiniteNumber("delta", raw.delta);
+    delta = raw.delta;
+  }
 
   // --- array fields ----------------------------------------------------
   function mapNumberArray(snakeKey: string, camelKey: string): number[] {
@@ -64,6 +79,9 @@ export function mapSimResponse(raw: Record<string, unknown>): SimResponse {
     noisySummary,
     absErrorSummary,
     scale,
+    mechanism,
+    sigma,
+    delta,
   };
 }
 
@@ -106,4 +124,8 @@ export function defaultSensitivity(queryType: string, values: number[]): number 
 
 export function laplacePdf(x: number, scale: number): number {
   return (1 / (2 * scale)) * Math.exp(-Math.abs(x) / scale);
+}
+
+export function gaussianPdf(x: number, sigma: number): number {
+  return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-(x * x) / (2 * sigma * sigma));
 }

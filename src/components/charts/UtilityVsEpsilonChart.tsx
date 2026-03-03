@@ -11,13 +11,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { simulate } from "@/lib/dp/wasmClient";
-import type { QueryType } from "@/lib/dp/types";
+import type { Mechanism, QueryType } from "@/lib/dp/types";
 
 export type UtilityVsEpsilonChartProps = {
   values: number[];
   queryType: QueryType;
   sensitivity: number;
   seed?: bigint;
+  mechanism?: Mechanism;
+  delta?: number;
 };
 
 interface DataPoint {
@@ -32,6 +34,8 @@ export default function UtilityVsEpsilonChart({
   queryType,
   sensitivity,
   seed,
+  mechanism = "laplace",
+  delta,
 }: UtilityVsEpsilonChartProps) {
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +64,8 @@ export default function UtilityVsEpsilonChart({
             sensitivity,
             runs: 50,
             seed: derivedSeed,
+            mechanism,
+            delta: mechanism === "gaussian" ? delta : undefined,
           });
           if (cancelled || requestIdRef.current !== id) return;
           points.push({ epsilon: eps, meanAbsError: res.absErrorSummary.mean });
@@ -77,7 +83,7 @@ export default function UtilityVsEpsilonChart({
     return () => {
       cancelled = true;
     };
-  }, [values, queryType, sensitivity, seed]);
+  }, [values, queryType, sensitivity, seed, mechanism, delta]);
 
   return (
     <div className="w-full h-56 relative">
