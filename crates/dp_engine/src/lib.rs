@@ -11,6 +11,7 @@
 use js_sys::Float64Array;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
+use rand_distr::{Distribution, Normal};
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
@@ -36,6 +37,26 @@ impl QueryKind {
             "count" => Ok(QueryKind::Count),
             other => Err(format!(
                 "unknown query type \"{other}\"; expected \"sum\", \"mean\", or \"count\""
+            )),
+        }
+    }
+}
+
+// ── Mechanism kind ────────────────────────────────────────────────────────────
+
+#[derive(Clone, Copy, PartialEq)]
+pub(crate) enum MechanismKind {
+    Laplace,
+    Gaussian,
+}
+
+impl MechanismKind {
+    fn from_str(s: &str) -> Result<Self, String> {
+        match s {
+            "laplace" => Ok(MechanismKind::Laplace),
+            "gaussian" => Ok(MechanismKind::Gaussian),
+            other => Err(format!(
+                "unknown mechanism \"{other}\"; expected \"laplace\" or \"gaussian\""
             )),
         }
     }
@@ -70,8 +91,16 @@ pub struct SimResponse {
     pub rel_errors_pct: Vec<f64>,
     pub noisy_summary: SimSummary,
     pub abs_error_summary: SimSummary,
-    /// Laplace scale b = sensitivity / ε.
+    /// Laplace scale b = sensitivity / ε (always present for backward compat).
     pub scale: f64,
+    /// Mechanism used: "laplace" or "gaussian".
+    pub mechanism: String,
+    /// Gaussian σ — present only when mechanism = "gaussian".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sigma: Option<f64>,
+    /// δ — present only when mechanism = "gaussian".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delta: Option<f64>,
 }
 
 // ── Pure DP mathematics ───────────────────────────────────────────────────────
@@ -151,6 +180,47 @@ pub(crate) fn laplace_sample(scale: f64, rng: &mut impl Rng) -> f64 {
     }
 }
 
+/// Draw a single sample from N(0, `stddev`) using the Box-Muller transform
+/// provided by `rand_distr::Normal`.
+///
+/// # Panics (debug only)
+/// Panics if `stddev` is not finite and positive.
+pub(crate) fn gaussian_sample(stddev: f64, rng: &mut impl Rng) -> f64 {
+    debug_assert!(
+        stddev > 0.0 && stddev.is_finite(),
+        "stddev must be finite and positive"
+    );
+    let normal = Normal::new(0.0, stddev).expect("stddev must be > 0");
+    let noise: f64 = normal.sample(rng);
+    if noise.is_finite() {
+        noise
+    } else {
+        0.0
+    }
+}
+
+/// Compute Gaussian mechanism sigma for teaching MVP:
+///   sigma = (sensitivity * sqrt(2 * ln(1.25 / delta))) / epsilon
+///
+/// Validates: epsilon > 0, 0 < delta < 1, sensitivity > 0.
+pub(crate) fn gaussian_sigma(sensitivity: f64, epsilon: f64, delta: f64) -> Result<f64, String> {
+    if epsilon <= 0.0 || !epsilon.is_finite() {
+        return Err("epsilon must be a finite positive number".into());
+    }
+    if delta <= 0.0 || delta >= 1.0 || !delta.is_finite() {
+        return Err("delta must be in (0, 1)".into());
+    }
+    if sensitivity <= 0.0 || !sensitivity.is_finite() {
+        return Err("sensitivity must be a finite positive number".into());
+    }
+    let sigma = sensitivity * (2.0 * (1.25_f64 / delta).ln()).sqrt() / epsilon;
+    if sigma.is_finite() && sigma > 0.0 {
+        Ok(sigma)
+    } else {
+        Err("computed sigma is not finite — check parameters".into())
+    }
+}
+
 // ── Summary statistics helpers ─────────────────────────────────────────────────
 
 /// Arithmetic mean.  Returns 0.0 for empty slices.
@@ -215,14 +285,16 @@ pub(crate) fn compute_summary(values: &[f64]) -> SimSummary {
 
 // ── WASM entry point ──────────────────────────────────────────────────────────
 
-/// Run a differentially private simulation using the Laplace mechanism.
+/// Run a differentially private simulation using the Laplace or Gaussian mechanism.
 ///
 /// # Parameters
 /// - `values`      — dataset as a `Float64Array`
 /// - `query_type`  — `"sum"`, `"mean"`, or `"count"`
+/// - `mechanism`   — `"laplace"` or `"gaussian"`
 /// - `epsilon`     — privacy budget ε > 0
 /// - `sensitivity` — global sensitivity Δf > 0
 /// - `runs`        — Monte-Carlo iterations (1 – 10 000)
+/// - `delta`       — failure probability δ ∈ (0, 1); required for gaussian
 /// - `seed`        — optional u64 seed string for reproducibility
 ///
 /// # Returns
@@ -232,9 +304,11 @@ pub(crate) fn compute_summary(values: &[f64]) -> SimSummary {
 pub fn simulate_query(
     values: Float64Array,
     query_type: &str,
+    mechanism: &str,
     epsilon: f64,
     sensitivity: f64,
     runs: u32,
+    delta: Option<f64>,
     seed: Option<String>,
 ) -> Result<JsValue, JsValue> {
     // ── Input validation ──────────────────────────────────────────────────────
@@ -289,13 +363,26 @@ pub fn simulate_query(
 
     // ── Core computation ──────────────────────────────────────────────────────
 
+    let mech = MechanismKind::from_str(mechanism)
+        .map_err(|e| JsValue::from_str(&e))?;
+
     let scale = sensitivity / epsilon;
     if !scale.is_finite() || scale <= 0.0 {
         return Err(JsValue::from_str(
-            "computed Laplace scale is not finite — \
+            "computed scale is not finite — \
              check that sensitivity and epsilon are reasonable",
         ));
     }
+
+    // Gaussian-specific: compute sigma
+    let sigma_opt = if mech == MechanismKind::Gaussian {
+        let d = delta.ok_or_else(|| JsValue::from_str("delta is required for the Gaussian mechanism"))?;
+        let s = gaussian_sigma(sensitivity, epsilon, d)
+            .map_err(|e| JsValue::from_str(&e))?;
+        Some(s)
+    } else {
+        None
+    };
 
     let true_val = true_query(&vals, kind);
 
@@ -321,7 +408,11 @@ pub fn simulate_query(
     let mut rel_errors_pct = Vec::with_capacity(cap);
 
     for _ in 0..runs {
-        let noisy = dp_query(true_val, scale, &mut rng);
+        let noise = match mech {
+            MechanismKind::Laplace => laplace_sample(scale, &mut rng),
+            MechanismKind::Gaussian => gaussian_sample(sigma_opt.unwrap(), &mut rng),
+        };
+        let noisy = true_val + noise;
         let abs_err = (noisy - true_val).abs();
         let rel_err = if true_val.abs() > 1e-10 {
             abs_err / true_val.abs() * 100.0
@@ -341,6 +432,9 @@ pub fn simulate_query(
         abs_errors,
         rel_errors_pct,
         scale,
+        mechanism: mechanism.to_string(),
+        sigma: sigma_opt,
+        delta: if mech == MechanismKind::Gaussian { delta } else { None },
     };
 
     serde_wasm_bindgen::to_value(&response)
@@ -610,5 +704,106 @@ mod tests {
         assert!(QueryKind::from_str("median").is_err());
         assert!(QueryKind::from_str("").is_err());
         assert!(QueryKind::from_str("SUM").is_err()); // case-sensitive
+    }
+
+    // ── MechanismKind::from_str ──────────────────────────────────────────────
+
+    #[test]
+    fn mechanism_kind_parses_all_variants() {
+        assert!(MechanismKind::from_str("laplace").is_ok());
+        assert!(MechanismKind::from_str("gaussian").is_ok());
+    }
+
+    #[test]
+    fn mechanism_kind_rejects_unknown() {
+        assert!(MechanismKind::from_str("exponential").is_err());
+        assert!(MechanismKind::from_str("").is_err());
+    }
+
+    // ── gaussian_sample: correctness ─────────────────────────────────────────
+
+    #[test]
+    fn gaussian_sample_always_finite() {
+        let mut rng = seeded();
+        for _ in 0..10_000 {
+            let s = gaussian_sample(1.0, &mut rng);
+            assert!(s.is_finite(), "non-finite sample: {s}");
+        }
+    }
+
+    /// E[N(0, σ)] = 0.  Over 100 k samples the empirical mean must be
+    /// within 0.02 of zero.
+    #[test]
+    fn gaussian_mean_approx_zero() {
+        let mut rng = seeded();
+        const N: usize = 100_000;
+        let m: f64 = (0..N).map(|_| gaussian_sample(1.0, &mut rng)).sum::<f64>() / N as f64;
+        assert!(
+            m.abs() < 0.02,
+            "empirical mean {m:.6} too far from 0"
+        );
+    }
+
+    /// Var[N(0, σ)] = σ².  Relative error must be < 5 % over 100 k samples.
+    #[test]
+    fn gaussian_variance_approx_sigma_squared() {
+        let mut rng = seeded();
+        const N: usize = 100_000;
+        let sigma = 2.5_f64;
+        let samples: Vec<f64> = (0..N).map(|_| gaussian_sample(sigma, &mut rng)).collect();
+        let m = samples.iter().sum::<f64>() / N as f64;
+        let variance = samples.iter().map(|x| (x - m).powi(2)).sum::<f64>() / N as f64;
+        let expected = sigma * sigma;
+        let rel_err = (variance - expected).abs() / expected;
+        assert!(
+            rel_err < 0.05,
+            "variance {variance:.4} deviates from σ²={expected:.4} by {:.1}%",
+            rel_err * 100.0
+        );
+    }
+
+    #[test]
+    fn gaussian_deterministic_with_seed() {
+        let run = |seed: u64| -> Vec<f64> {
+            let mut rng = ChaCha20Rng::seed_from_u64(seed);
+            (0..200).map(|_| gaussian_sample(1.0, &mut rng)).collect()
+        };
+        assert_eq!(run(SEED), run(SEED));
+    }
+
+    #[test]
+    fn gaussian_different_seeds_differ() {
+        let run = |seed: u64| -> Vec<f64> {
+            let mut rng = ChaCha20Rng::seed_from_u64(seed);
+            (0..200).map(|_| gaussian_sample(1.0, &mut rng)).collect()
+        };
+        assert_ne!(run(1), run(2));
+    }
+
+    // ── gaussian_sigma ───────────────────────────────────────────────────────
+
+    #[test]
+    fn gaussian_sigma_basic() {
+        let sigma = gaussian_sigma(1.0, 1.0, 1e-5).unwrap();
+        // sigma = sqrt(2 * ln(1.25/1e-5)) / 1.0 ≈ sqrt(2 * 11.7361) ≈ 4.844
+        assert!(sigma > 4.0 && sigma < 6.0, "sigma={sigma}");
+    }
+
+    #[test]
+    fn gaussian_sigma_rejects_zero_epsilon() {
+        assert!(gaussian_sigma(1.0, 0.0, 1e-5).is_err());
+    }
+
+    #[test]
+    fn gaussian_sigma_rejects_delta_out_of_range() {
+        assert!(gaussian_sigma(1.0, 1.0, 0.0).is_err());
+        assert!(gaussian_sigma(1.0, 1.0, 1.0).is_err());
+        assert!(gaussian_sigma(1.0, 1.0, -0.1).is_err());
+        assert!(gaussian_sigma(1.0, 1.0, 1.5).is_err());
+    }
+
+    #[test]
+    fn gaussian_sigma_rejects_zero_sensitivity() {
+        assert!(gaussian_sigma(0.0, 1.0, 1e-5).is_err());
     }
 }

@@ -1,12 +1,14 @@
 /**
- * Run a differentially private simulation using the Laplace mechanism.
+ * Run a differentially private simulation using the Laplace or Gaussian mechanism.
  *
  * # Parameters
  * - `values`      — dataset as a `Float64Array`
  * - `query_type`  — `"sum"`, `"mean"`, or `"count"`
+ * - `mechanism`   — `"laplace"` or `"gaussian"`
  * - `epsilon`     — privacy budget ε > 0
  * - `sensitivity` — global sensitivity Δf > 0
  * - `runs`        — Monte-Carlo iterations (1 – 10 000)
+ * - `delta`       — failure probability δ ∈ (0, 1); required for gaussian
  * - `seed`        — optional u64 seed string for reproducibility
  *
  * # Returns
@@ -14,18 +16,22 @@
  * string exception on invalid input or computation error.
  * @param {Float64Array} values
  * @param {string} query_type
+ * @param {string} mechanism
  * @param {number} epsilon
  * @param {number} sensitivity
  * @param {number} runs
+ * @param {number | null} [delta]
  * @param {string | null} [seed]
  * @returns {any}
  */
-export function simulate_query(values, query_type, epsilon, sensitivity, runs, seed) {
+export function simulate_query(values, query_type, mechanism, epsilon, sensitivity, runs, delta, seed) {
     const ptr0 = passStringToWasm0(query_type, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
-    var ptr1 = isLikeNone(seed) ? 0 : passStringToWasm0(seed, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len1 = WASM_VECTOR_LEN;
-    const ret = wasm.simulate_query(values, ptr0, len0, epsilon, sensitivity, runs, ptr1, len1);
+    const ptr1 = passStringToWasm0(mechanism, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    var ptr2 = isLikeNone(seed) ? 0 : passStringToWasm0(seed, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len2 = WASM_VECTOR_LEN;
+    const ret = wasm.simulate_query(values, ptr0, len0, ptr1, len1, epsilon, sensitivity, runs, !isLikeNone(delta), isLikeNone(delta) ? 0 : delta, ptr2, len2);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
