@@ -68,7 +68,7 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
     req.epsilon,
     req.sensitivity,
     req.runs,
-    mechanism === "gaussian" ? req.delta : undefined,
+    mechanism === "gaussian" ? req.delta : null,
     seedStr
   );
 

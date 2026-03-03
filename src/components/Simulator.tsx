@@ -213,9 +213,6 @@ export default function Simulator() {
   }, []);
 
   const pdfTitle = mechanism === "gaussian" ? "Gaussian Noise PDF" : "Laplace Noise PDF";
-  const noiseScaleLabel = mechanism === "gaussian" && result?.sigma != null
-    ? `σ = ${result.sigma.toFixed(4)}`
-    : result ? `b = ${result.scale.toFixed(4)}` : "";
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">

@@ -89,4 +89,9 @@ describe("encodeShareState / decodeShareState round-trip", () => {
     expect(decodeShareState(new URLSearchParams("topic=comp")).topic).toBe("composition");
     expect(decodeShareState(new URLSearchParams("topic=invalid")).topic).toBeUndefined();
   });
+
+  it("decodes valid mechanism values", () => {
+    expect(decodeShareState(new URLSearchParams("mech=laplace")).mechanism).toBe("laplace");
+    expect(decodeShareState(new URLSearchParams("mech=gaussian")).mechanism).toBe("gaussian");
+  });
 });

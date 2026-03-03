@@ -202,6 +202,9 @@ pub(crate) fn gaussian_sample(stddev: f64, rng: &mut impl Rng) -> f64 {
 /// Compute Gaussian mechanism sigma for teaching MVP:
 ///   sigma = (sensitivity * sqrt(2 * ln(1.25 / delta))) / epsilon
 ///
+/// The constant 1.25 comes from the standard calibration for the Gaussian
+/// mechanism under (ε, δ)-DP (see Dwork & Roth, 2014, Theorem A.1).
+///
 /// Validates: epsilon > 0, 0 < delta < 1, sensitivity > 0.
 pub(crate) fn gaussian_sigma(sensitivity: f64, epsilon: f64, delta: f64) -> Result<f64, String> {
     if epsilon <= 0.0 || !epsilon.is_finite() {
@@ -376,7 +379,7 @@ pub fn simulate_query(
 
     // Gaussian-specific: compute sigma
     let sigma_opt = if mech == MechanismKind::Gaussian {
-        let d = delta.ok_or_else(|| JsValue::from_str("delta is required for the Gaussian mechanism"))?;
+        let d = delta.ok_or_else(|| JsValue::from_str("delta is required for the Gaussian mechanism and must be in (0, 1)"))?;
         let s = gaussian_sigma(sensitivity, epsilon, d)
             .map_err(|e| JsValue::from_str(&e))?;
         Some(s)
