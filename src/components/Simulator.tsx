@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import ControlPanel from "./ControlPanel";
 import ResultsPanel from "./ResultsPanel";
 import ModeToggle from "./ModeToggle";
 import TheoryPanel from "./TheoryPanel";
 import References from "./References";
+import { APP_NAME, APP_VERSION } from "@/lib/version";
 import CompositionPanel from "./CompositionPanel";
 import PresetPicker from "./PresetPicker";
 import { DATASETS } from "@/lib/datasets";
@@ -255,6 +257,17 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
         </header>
       )}
 
+      {/* ── Academic page links ────────────────────────────────────────────── */}
+      {!isEmbed && (
+        <nav className="bg-gray-900 border-b border-gray-800 px-6 py-1.5 flex flex-wrap gap-4 text-xs">
+          <Link href="/compare" className="text-indigo-400 hover:text-indigo-300 underline">Compare</Link>
+          <Link href="/composition" className="text-indigo-400 hover:text-indigo-300 underline">Composition</Link>
+          <Link href="/appendix" className="text-indigo-400 hover:text-indigo-300 underline">Appendix</Link>
+          <Link href="/references" className="text-indigo-400 hover:text-indigo-300 underline">References</Link>
+          <Link href="/methodology" className="text-indigo-400 hover:text-indigo-300 underline">Methodology</Link>
+        </nav>
+      )}
+
       {/* ── Preset picker panel ────────────────────────────────────────────── */}
       {!isEmbed && presetsOpen && (
         <div className="border-b border-gray-800 bg-gray-900/80 px-6 py-4 max-h-96 overflow-y-auto">
@@ -449,6 +462,20 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
           </section>
         )}
       </main>
+
+      {/* ── Footer ──────────────────────────────────────────────────────────── */}
+      {!isEmbed && (
+        <footer className="border-t border-gray-800 px-6 py-3 text-xs text-gray-600 flex flex-wrap items-center justify-between">
+          <span>{APP_NAME} v{APP_VERSION}</span>
+          <nav className="flex gap-4">
+            <Link href="/compare" className="text-indigo-400/60 hover:text-indigo-300 underline">Compare</Link>
+            <Link href="/composition" className="text-indigo-400/60 hover:text-indigo-300 underline">Composition</Link>
+            <Link href="/appendix" className="text-indigo-400/60 hover:text-indigo-300 underline">Appendix</Link>
+            <Link href="/references" className="text-indigo-400/60 hover:text-indigo-300 underline">References</Link>
+            <Link href="/methodology" className="text-indigo-400/60 hover:text-indigo-300 underline">Methodology</Link>
+          </nav>
+        </footer>
+      )}
     </div>
   );
 }
