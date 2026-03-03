@@ -11,12 +11,12 @@ import {
   ReferenceLine,
 } from "recharts";
 
-interface Props {
+export type NoisyResultsHistogramProps = {
   noisyValues: number[];
-  trueValue: number;
-}
+  trueValue?: number;
+};
 
-function buildHistogram(values: number[], bins = 30) {
+function buildHistogram(values: number[], bins = 20) {
   if (values.length === 0) return [];
   const { min, max } = values.reduce(
     (acc, v) => ({ min: v < acc.min ? v : acc.min, max: v > acc.max ? v : acc.max }),
@@ -36,7 +36,7 @@ function buildHistogram(values: number[], bins = 30) {
   }));
 }
 
-export default function NoisyResultsHistogram({ noisyValues, trueValue }: Props) {
+export default function NoisyResultsHistogram({ noisyValues, trueValue }: NoisyResultsHistogramProps) {
   const data = buildHistogram(noisyValues);
   const domain = noisyValues.length > 0
     ? [Math.min(...noisyValues), Math.max(...noisyValues)]
@@ -61,7 +61,9 @@ export default function NoisyResultsHistogram({ noisyValues, trueValue }: Props)
             labelFormatter={(label) => `Value: ${Number(label).toFixed(3)}`}
             contentStyle={{ background: "#1f2937", border: "1px solid #374151", color: "#f9fafb" }}
           />
-          <ReferenceLine x={trueValue} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "True", fill: "#f59e0b", fontSize: 11 }} />
+          {trueValue != null && (
+            <ReferenceLine x={trueValue} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "True", fill: "#f59e0b", fontSize: 11 }} />
+          )}
           <Bar dataKey="count" fill="#34d399" opacity={0.85} />
         </BarChart>
       </ResponsiveContainer>
