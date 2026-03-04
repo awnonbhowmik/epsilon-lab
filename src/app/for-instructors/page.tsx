@@ -1,25 +1,15 @@
 import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import PresetPicker from "@/components/PresetPicker";
 import ClassSessionChecklist from "@/components/ClassSessionChecklist";
 
 export default function ForInstructorsPage() {
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <header className="border-b border-gray-800 px-6 py-4">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-indigo-400">
-            ε EpsilonLab — For Instructors
-          </h1>
-          <Link
-            href="/"
-            className="text-xs text-indigo-400 hover:text-indigo-300 underline"
-          >
-            ← Back to home
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+      <Header />
 
-      <main className="max-w-5xl mx-auto p-6 space-y-10">
+      <main className="flex-1 max-w-5xl mx-auto p-6 space-y-10">
         {/* Quick start */}
         <section>
           <h2 className="text-lg font-bold text-indigo-300 mb-3">
@@ -148,6 +138,8 @@ export default function ForInstructorsPage() {
           </Link>
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 }
