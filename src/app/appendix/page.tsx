@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MathTex from "@/components/Math";
 import { NOTATION, DEFINITIONS } from "@/lib/content/glossary";
 import { MECHANISMS, UTILITY_METRICS, UTILITY_BEHAVIOR } from "@/lib/content/appendix";
 import { APP_NAME, APP_VERSION } from "@/lib/version";
@@ -74,11 +75,11 @@ export default function AppendixPage() {
                 </p>
                 <p className="text-gray-400">
                   <span className="text-gray-500">Noise scale:</span>{" "}
-                  <code className="text-indigo-200 bg-gray-800 px-1 rounded">{m.noiseScale}</code>
+                  <MathTex>{m.noiseScaleLatex}</MathTex>
                 </p>
                 <p className="text-gray-400">
                   <span className="text-gray-500">PDF:</span>{" "}
-                  <code className="text-indigo-200 bg-gray-800 px-1 rounded">{m.pdfFormula}</code>
+                  <MathTex>{m.pdfFormulaLatex}</MathTex>
                 </p>
                 {m.notes && (
                   <p className="text-xs text-yellow-400/80 mt-1 italic">{m.notes}</p>
@@ -95,7 +96,7 @@ export default function AppendixPage() {
             <div key={metric.name} className="bg-gray-900 border border-gray-700 rounded p-4 space-y-1">
               <h3 className="text-sm font-semibold text-indigo-300">{metric.name}</h3>
               <p className="text-sm text-gray-400">
-                <code className="text-indigo-200 bg-gray-800 px-1 rounded">{metric.formula}</code>
+                <MathTex>{metric.formulaLatex}</MathTex>
               </p>
               <p className="text-sm text-gray-500">{metric.description}</p>
             </div>

@@ -2,6 +2,7 @@
 
 import type { Mechanism, SimResponse } from "@/lib/dp/types";
 import { formatNumber } from "@/lib/dp/utils";
+import MathTex from "./Math";
 
 interface Props {
   result: SimResponse | null;
@@ -31,7 +32,7 @@ function MetricCard({
     >
       <div className="text-xs text-gray-400 mb-0.5">{label}</div>
       {formula && (
-        <div className="text-xs font-mono text-indigo-400 mb-1">{formula}</div>
+        <div className="text-xs text-indigo-400 mb-1"><MathTex>{formula}</MathTex></div>
       )}
       <div
         className={`text-xl font-mono font-semibold tabular-nums ${
@@ -68,7 +69,7 @@ function StatGrid({
           {title}
         </h3>
         {formula && (
-          <span className="text-xs font-mono text-indigo-400">{formula}</span>
+          <span className="text-xs text-indigo-400"><MathTex>{formula}</MathTex></span>
         )}
       </div>
       <div className="grid grid-cols-5 gap-2">
@@ -125,84 +126,87 @@ export default function ResultsPanel({ result, isAcademic, mechanism }: Props) {
         <MetricCard
           label="Mean Noisy Value"
           value={formatNumber(result.noisySummary.mean)}
-          formula={isAcademic ? "E[M(x)]" : undefined}
+          formula={isAcademic ? "\\mathbb{E}[M(x)]" : undefined}
         />
         {mechanism === "gaussian" && result.sigma != null ? (
           <MetricCard
             label="Gaussian σ"
             value={formatNumber(result.sigma)}
-            formula={isAcademic ? "σ = Δf·√(2ln(1.25/δ))/ε" : undefined}
+            formula={isAcademic ? "\\sigma = \\Delta f \\cdot \\sqrt{2\\ln(1.25/\\delta)}\\,/\\,\\varepsilon" : undefined}
           />
         ) : (
           <MetricCard
             label="Laplace Scale b"
             value={formatNumber(result.scale)}
-            formula={isAcademic ? "b = Δf/ε" : undefined}
+            formula={isAcademic ? "b = \\Delta f\\,/\\,\\varepsilon" : undefined}
           />
         )}
         <MetricCard
           label="Mean |Error|"
           value={formatNumber(result.absErrorSummary.mean)}
-          formula={isAcademic ? (mechanism === "laplace" ? "E[|η|] ≈ b" : "E[|η|] ≈ σ·√(2/π)") : undefined}
+          formula={isAcademic ? (mechanism === "laplace" ? "\\mathbb{E}[|\\eta|] \\approx b" : "\\mathbb{E}[|\\eta|] \\approx \\sigma\\sqrt{2/\\pi}") : undefined}
         />
       </div>
 
       {/* Distribution summaries */}
       <StatGrid
         title="Noisy output distribution"
-        formula={isAcademic ? "f(x) + Lap(b)" : undefined}
+        formula={isAcademic ? "f(x) + \\text{Lap}(b)" : undefined}
         summary={result.noisySummary}
       />
       <StatGrid
         title="Absolute error distribution"
-        formula={isAcademic ? "|M(x) − f(x)|" : undefined}
+        formula={isAcademic ? "|M(x) - f(x)|" : undefined}
         summary={result.absErrorSummary}
       />
 
       {/* Academic formula box */}
       {isAcademic && mechanism === "laplace" && (
-        <div className="rounded-lg border border-indigo-700/40 bg-indigo-950/30 p-4 text-xs font-mono space-y-1">
+        <div className="rounded-lg border border-indigo-700/40 bg-indigo-950/30 p-4 text-xs space-y-1">
           <p className="text-indigo-300 font-semibold text-sm mb-2">
             Laplace Mechanism Summary
           </p>
-          <p className="text-gray-300">M(x) = f(x) + Lap(Δf/ε)</p>
+          <p className="text-gray-300"><MathTex>{"M(x) = f(x) + \\text{Lap}(\\Delta f\\,/\\,\\varepsilon)"}</MathTex></p>
           <p className="text-gray-400">
-            b = Δf/ε = {formatNumber(result.scale, 6)}
-          </p>
-          <p className="text-gray-400">
-            E[|η|] = b ={" "}
+            <MathTex>{"b = \\Delta f\\,/\\,\\varepsilon"}</MathTex>{" = "}
             {formatNumber(result.scale, 6)}
           </p>
           <p className="text-gray-400">
-            Var[η] = 2b² ={" "}
+            <MathTex>{"\\mathbb{E}[|\\eta|] = b"}</MathTex>{" = "}
+            {formatNumber(result.scale, 6)}
+          </p>
+          <p className="text-gray-400">
+            <MathTex>{"\\text{Var}[\\eta] = 2b^2"}</MathTex>{" = "}
             {formatNumber(2 * result.scale * result.scale, 6)}
           </p>
           <p className="text-gray-400">
-            Std[η] = b√2 ={" "}
+            <MathTex>{"\\text{Std}[\\eta] = b\\sqrt{2}"}</MathTex>{" = "}
             {formatNumber(result.scale * Math.sqrt(2), 6)}
           </p>
         </div>
       )}
       {isAcademic && mechanism === "gaussian" && result.sigma != null && (
-        <div className="rounded-lg border border-indigo-700/40 bg-indigo-950/30 p-4 text-xs font-mono space-y-1">
+        <div className="rounded-lg border border-indigo-700/40 bg-indigo-950/30 p-4 text-xs space-y-1">
           <p className="text-indigo-300 font-semibold text-sm mb-2">
             Gaussian Mechanism Summary
           </p>
-          <p className="text-gray-300">M(x) = f(x) + N(0, σ²)</p>
+          <p className="text-gray-300"><MathTex>{"M(x) = f(x) + \\mathcal{N}(0,\\, \\sigma^2)"}</MathTex></p>
           <p className="text-gray-400">
-            σ = Δf·√(2ln(1.25/δ))/ε = {formatNumber(result.sigma, 6)}
+            <MathTex>{"\\sigma = \\Delta f \\cdot \\sqrt{2\\ln(1.25/\\delta)}\\,/\\,\\varepsilon"}</MathTex>{" = "}
+            {formatNumber(result.sigma, 6)}
           </p>
           {result.delta != null && (
             <p className="text-gray-400">
-              δ = {result.delta.toExponential(2)}
+              <MathTex>{"\\delta"}</MathTex>{" = "}
+              {result.delta.toExponential(2)}
             </p>
           )}
           <p className="text-gray-400">
-            E[|η|] = σ·√(2/π) ={" "}
+            <MathTex>{"\\mathbb{E}[|\\eta|] = \\sigma\\sqrt{2/\\pi}"}</MathTex>{" = "}
             {formatNumber(result.sigma * Math.sqrt(2 / Math.PI), 6)}
           </p>
           <p className="text-gray-400">
-            Var[η] = σ² ={" "}
+            <MathTex>{"\\text{Var}[\\eta] = \\sigma^2"}</MathTex>{" = "}
             {formatNumber(result.sigma * result.sigma, 6)}
           </p>
         </div>

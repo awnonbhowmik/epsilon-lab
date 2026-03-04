@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import MathTex from "@/components/Math";
 import {
   LineChart,
   Line,
@@ -180,21 +181,21 @@ export default function PrivacyAccountingPage() {
           <div className="bg-gray-900 border border-gray-700 rounded p-4 space-y-2">
             <h2 className="text-sm font-semibold text-indigo-300">Basic Composition</h2>
             <p className="text-sm text-gray-400">
-              The total privacy cost is the sum of individual costs: ε_total = k·ε, δ_total = k·δ.
-              Simple but loose for large k.
+              The total privacy cost is the sum of individual costs: <MathTex>{"\\varepsilon_{\\text{total}} = k \\cdot \\varepsilon,\\; \\delta_{\\text{total}} = k \\cdot \\delta"}</MathTex>.
+              Simple but loose for large <MathTex>{"k"}</MathTex>.
             </p>
           </div>
           <div className="bg-gray-900 border border-gray-700 rounded p-4 space-y-2">
             <h2 className="text-sm font-semibold text-indigo-300">Advanced Composition</h2>
             <p className="text-sm text-gray-400">
-              Dwork, Rothblum &amp; Vadhan (2010): for k-fold composition of (ε, δ)-DP mechanisms,
-              the composed mechanism satisfies (ε&apos;, kδ + δ&apos;)-DP where:
+              Dwork, Rothblum &amp; Vadhan (2010): for k-fold composition of <MathTex>{"(\\varepsilon, \\delta)"}</MathTex>-DP mechanisms,
+              the composed mechanism satisfies <MathTex>{"(\\varepsilon', k\\delta + \\delta')"}</MathTex>-DP where:
             </p>
-            <p className="text-sm font-mono text-indigo-200">
-              ε&apos; = ε√(2k·ln(1/δ&apos;)) + k·ε·(e^ε − 1)
+            <p className="text-sm text-indigo-200">
+              <MathTex display>{"\\varepsilon' = \\varepsilon\\sqrt{2k\\ln(1/\\delta')} + k\\varepsilon(e^{\\varepsilon} - 1)"}</MathTex>
             </p>
             <p className="text-sm text-gray-400">
-              Grows as √k rather than k — much tighter for large number of queries.
+              Grows as <MathTex>{"\\sqrt{k}"}</MathTex> rather than <MathTex>{"k"}</MathTex> — much tighter for large number of queries.
             </p>
           </div>
           <div className="bg-gray-900 border border-gray-700 rounded p-4 space-y-2">
@@ -202,7 +203,7 @@ export default function PrivacyAccountingPage() {
             <p className="text-sm text-gray-400">
               Rényi Differential Privacy (Mironov, 2017) tracks privacy loss using Rényi divergences.
               Under RDP, composition is exact: Rényi divergences add linearly. The final conversion
-              to (ε, δ)-DP gives ε_total ≈ ε·√(2k·ln(1/δ)), which is often the tightest practical bound.
+              to <MathTex>{"(\\varepsilon, \\delta)"}</MathTex>-DP gives <MathTex>{"\\varepsilon_{\\text{total}} \\approx \\varepsilon \\cdot \\sqrt{2k\\ln(1/\\delta)}"}</MathTex>, which is often the tightest practical bound.
             </p>
           </div>
         </div>

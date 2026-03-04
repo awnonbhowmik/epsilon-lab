@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import MathTex from "@/components/Math";
 import {
   LineChart,
   Line,
@@ -29,8 +30,10 @@ const COMPARISON_ROWS = [
   },
   {
     aspect: "Noise distribution",
-    laplace: "Laplace(0, b) where b = \u0394f / \u03B5",
-    gaussian: "N(0, \u03C3\u00B2) where \u03C3 = (\u0394f \u00B7 \u221A(2 ln(1.25/\u03B4))) / \u03B5",
+    laplace: "Laplace(0, b) where b = Δf / ε",
+    gaussian: "N(0, σ²) where σ = (Δf · √(2 ln(1.25/δ))) / ε",
+    laplaceLatex: "\\text{Laplace}(0, b) \\text{ where } b = \\Delta f\\,/\\,\\varepsilon",
+    gaussianLatex: "\\mathcal{N}(0, \\sigma^2) \\text{ where } \\sigma = \\frac{\\Delta f \\cdot \\sqrt{2\\ln(1.25/\\delta)}}{\\varepsilon}",
   },
   {
     aspect: "Inputs required",
@@ -52,7 +55,7 @@ const COMPARISON_ROWS = [
     laplace: "Heavier tails than Gaussian; may add more noise in high-dimensional settings (L1 vs L2)",
     gaussian: "Requires \u03B4 > 0 (small probability of guarantee failure); more complex calibration",
   },
-];
+] as const;
 
 export default function ComparePage() {
   const [epsilon, setEpsilon] = useState(1.0);
@@ -118,8 +121,8 @@ export default function ComparePage() {
                 {COMPARISON_ROWS.map((row) => (
                   <tr key={row.aspect} className="border-b border-gray-800">
                     <td className="py-2 px-3 text-gray-400 font-medium">{row.aspect}</td>
-                    <td className="py-2 px-3">{row.laplace}</td>
-                    <td className="py-2 px-3">{row.gaussian}</td>
+                    <td className="py-2 px-3">{"laplaceLatex" in row ? <MathTex>{row.laplaceLatex}</MathTex> : row.laplace}</td>
+                    <td className="py-2 px-3">{"gaussianLatex" in row ? <MathTex>{row.gaussianLatex}</MathTex> : row.gaussian}</td>
                   </tr>
                 ))}
               </tbody>
