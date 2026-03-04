@@ -41,7 +41,6 @@ export default function ContactPage() {
 
     const hp = checkHoneypot(honeypot);
     if (!hp.ok) {
-      console.warn(hp.reason);
       setLoading(false);
       return;
     }
@@ -55,7 +54,6 @@ export default function ContactPage() {
 
     const td = checkTypingDelay(formStartTime, now);
     if (!td.ok) {
-      console.warn(td.reason);
       setLoading(false);
       return;
     }
@@ -69,7 +67,6 @@ export default function ContactPage() {
 
     const ls = checkLinkSpam(formData.message);
     if (!ls.ok) {
-      console.warn(ls.reason);
       setLoading(false);
       return;
     }

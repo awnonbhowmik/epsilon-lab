@@ -84,6 +84,16 @@ describe("validateFields", () => {
     expect(r.reason).toMatch(/email/i);
   });
 
+  it("rejects email with @ but no domain", () => {
+    const r = validateFields({ ...valid, email: "alice@" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects bare @", () => {
+    const r = validateFields({ ...valid, email: "@" });
+    expect(r.ok).toBe(false);
+  });
+
   it("rejects message shorter than 10 chars", () => {
     const r = validateFields({ ...valid, message: "Hi" });
     expect(r.ok).toBe(false);
@@ -98,16 +108,22 @@ describe("checkLinkSpam", () => {
   });
 
   it("passes with 2 URLs (at threshold)", () => {
-    expect(checkLinkSpam("Visit http://a.com and http://b.com")).toEqual({
+    expect(checkLinkSpam("Visit http://a.com and https://b.com")).toEqual({
       ok: true,
     });
   });
 
   it("rejects with more than 2 URLs", () => {
     const r = checkLinkSpam(
-      "http://a.com http://b.com http://c.com",
+      "http://a.com https://b.com http://c.com",
     );
     expect(r.ok).toBe(false);
     expect(r.reason).toMatch(/links/i);
+  });
+
+  it("does not count bare 'http' without :// as a URL", () => {
+    expect(checkLinkSpam("I like http stuff and http things and http items")).toEqual({
+      ok: true,
+    });
   });
 });

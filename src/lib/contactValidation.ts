@@ -57,7 +57,7 @@ export function validateFields(data: ContactFormData): ValidationResult {
     return { ok: false, reason: "Please enter your name." };
   }
 
-  if (!data.email.includes("@")) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     return { ok: false, reason: "Please enter a valid email." };
   }
 
@@ -73,7 +73,7 @@ export function checkLinkSpam(
   message: string,
   maxUrls = 2,
 ): ValidationResult {
-  const urlCount = (message.match(/http/g) || []).length;
+  const urlCount = (message.match(/https?:\/\//gi) || []).length;
   if (urlCount > maxUrls) {
     return { ok: false, reason: "Spam detected: too many links" };
   }
