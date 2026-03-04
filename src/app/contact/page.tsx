@@ -20,7 +20,7 @@ export default function ContactPage() {
       `Name: ${name}\nEmail: ${email}\nInstitution: ${institution}\n\n${message}`
     );
 
-    window.location.href = `mailto:contact@example.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:contact@epsilonlab.org?subject=${subject}&body=${body}`;
     setSubmitted(true);
   }
 
@@ -54,7 +54,7 @@ export default function ContactPage() {
             <p className="text-sm text-gray-400">
               Your email client should have opened with a pre-filled message. If
               not, please email us directly at{" "}
-              <span className="text-indigo-400">contact@example.com</span>.
+              <span className="text-indigo-400">contact@epsilonlab.org</span>.
             </p>
           </div>
         ) : (
