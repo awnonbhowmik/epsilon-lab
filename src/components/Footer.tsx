@@ -18,6 +18,10 @@ const companyLinks = [
   { label: "Contact", href: "/contact" },
   { label: "License", href: "/license" },
   { label: "Privacy", href: "/privacy" },
+  {
+    label: "Report a Bug",
+    href: "mailto:contact@epsilonlab.org?subject=EpsilonLab%20Bug%20Report",
+  },
 ];
 
 export default function Footer() {

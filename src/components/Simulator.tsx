@@ -202,33 +202,54 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
     };
   }, [runSimulation]);
 
-  const handleExportPng = useCallback(async () => {
-    const { toPng } = await import("html-to-image");
-    // Build a temporary off-screen container with metrics + charts + footer
-    const container = document.createElement("div");
-    container.style.cssText =
-      "background:#030712;color:#f3f4f6;padding:24px;width:1200px;position:absolute;left:-9999px;top:0";
-    document.body.appendChild(container);
-    try {
-      if (exportRef.current) {
-        container.appendChild(exportRef.current.cloneNode(true));
-      }
-      if (chartsRef.current) {
-        container.appendChild(chartsRef.current.cloneNode(true));
-      }
-      const footer = document.createElement("div");
-      footer.style.cssText =
-        "margin-top:16px;padding-top:12px;border-top:1px solid #374151;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af";
-      footer.innerHTML = `<span>EpsilonLab</span><span>${new Date().toLocaleDateString()}</span>`;
-      container.appendChild(footer);
+  const [exporting, setExporting] = useState(false);
 
-      const dataUrl = await toPng(container, { pixelRatio: 2 });
-      const link = document.createElement("a");
-      link.download = `epsilonlab_${Date.now()}.png`;
-      link.href = dataUrl;
-      link.click();
+  const handleExportPng = useCallback(async () => {
+    setExporting(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      // Build a temporary off-screen container with metrics + charts + footer
+      const container = document.createElement("div");
+      container.style.cssText =
+        "background:#ffffff;color:#030712;padding:24px;width:1200px;position:absolute;left:-9999px;top:0";
+      document.body.appendChild(container);
+      try {
+        if (exportRef.current) {
+          container.appendChild(exportRef.current.cloneNode(true));
+        }
+        if (chartsRef.current) {
+          container.appendChild(chartsRef.current.cloneNode(true));
+        }
+        const footer = document.createElement("div");
+        footer.style.cssText =
+          "margin-top:16px;padding-top:12px;border-top:1px solid #374151;display:flex;justify-content:space-between;font-size:11px;color:#6b7280";
+        footer.innerHTML = `<span>EpsilonLab</span><span>${new Date().toLocaleDateString()}</span>`;
+        container.appendChild(footer);
+
+        // Clamp to 4096px — common browser canvas size limit
+        const maxDim = 4096;
+        const opts = {
+          pixelRatio: 2,
+          width: Math.min(container.scrollWidth, maxDim),
+          height: Math.min(container.scrollHeight, maxDim),
+        };
+
+        let dataUrl: string;
+        try {
+          dataUrl = await toPng(container, opts);
+        } catch {
+          // retry once
+          dataUrl = await toPng(container, opts);
+        }
+        const link = document.createElement("a");
+        link.download = `epsilonlab_${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      } finally {
+        document.body.removeChild(container);
+      }
     } finally {
-      document.body.removeChild(container);
+      setExporting(false);
     }
   }, []);
 
@@ -383,10 +404,16 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
                 Simulation Results
               </h2>
               {result && !isEmbed && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {exporting && (
+                    <span className="text-xs text-indigo-400 animate-pulse">
+                      Generating export…
+                    </span>
+                  )}
                   <button
                     onClick={handleExportPng}
-                    className="px-2.5 py-1 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                    disabled={exporting}
+                    className="px-2.5 py-1 text-xs font-medium rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors disabled:opacity-50"
                   >
                     Export PNG
                   </button>
