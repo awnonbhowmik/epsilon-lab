@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -132,9 +133,11 @@ export default function Home() {
                 key={item.label}
                 className="border border-gray-800 rounded-lg bg-gray-900/50 overflow-hidden"
               >
-                <img
+                <Image
                   src={item.src}
                   alt={`${item.label} screenshot`}
+                  width={600}
+                  height={400}
                   className="w-full h-auto"
                 />
                 <p className="text-center text-xs text-gray-500 py-2">
