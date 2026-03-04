@@ -4,6 +4,13 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import emailjs from "@emailjs/browser";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import {
+  checkHoneypot,
+  checkRateLimit,
+  checkTypingDelay,
+  validateFields,
+  checkLinkSpam,
+} from "@/lib/contactValidation";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -15,6 +22,9 @@ export default function ContactPage() {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [honeypot, setHoneypot] = useState("");
+  const [lastSubmitTime, setLastSubmitTime] = useState<number | null>(null);
+  const [formStartTime] = useState(Date.now());
 
   function handleChange(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -26,6 +36,45 @@ export default function ContactPage() {
     setLoading(true);
     setStatus("idle");
 
+    /* --- spam / validation gates --- */
+    const now = Date.now();
+
+    const hp = checkHoneypot(honeypot);
+    if (!hp.ok) {
+      console.warn(hp.reason);
+      setLoading(false);
+      return;
+    }
+
+    const rl = checkRateLimit(lastSubmitTime, now);
+    if (!rl.ok) {
+      alert(rl.reason);
+      setLoading(false);
+      return;
+    }
+
+    const td = checkTypingDelay(formStartTime, now);
+    if (!td.ok) {
+      console.warn(td.reason);
+      setLoading(false);
+      return;
+    }
+
+    const vf = validateFields(formData);
+    if (!vf.ok) {
+      alert(vf.reason);
+      setLoading(false);
+      return;
+    }
+
+    const ls = checkLinkSpam(formData.message);
+    if (!ls.ok) {
+      console.warn(ls.reason);
+      setLoading(false);
+      return;
+    }
+
+    /* --- send via EmailJS --- */
     try {
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
@@ -40,6 +89,7 @@ export default function ContactPage() {
       );
 
       setStatus("success");
+      setLastSubmitTime(Date.now());
       setFormData({ name: "", email: "", institution: "", message: "" });
     } catch (error) {
       console.error("EmailJS error:", error);
@@ -89,6 +139,18 @@ export default function ContactPage() {
                 </p>
               </div>
             )}
+
+            {/* Honeypot field – hidden from real users */}
+            <input
+              type="text"
+              name="website"
+              autoComplete="off"
+              tabIndex={-1}
+              aria-hidden="true"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              className="hidden"
+            />
 
             <div>
               <label htmlFor="name" className="block text-sm font-semibold mb-1">
