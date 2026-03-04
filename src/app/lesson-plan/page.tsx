@@ -186,15 +186,21 @@ export default function LessonPlanPage() {
           <div className="space-y-2 text-xs font-mono bg-gray-900 border border-gray-700 rounded p-3 text-gray-300 break-all">
             <p>
               <strong className="text-indigo-400">Demo 1 (Laplace):</strong>{" "}
-              /simulator?d=small_integers&q=sum&e=1&s=15&r=500&seed=42&m=student&adv=0&mech=laplace&topic=single
+              <Link href="/simulator?d=small_integers&q=sum&e=1&s=15&r=500&seed=42&m=student&adv=0&mech=laplace&topic=single" className="text-indigo-400 hover:text-indigo-300 underline">
+                /simulator?d=small_integers&q=sum&e=1&s=15&r=500&seed=42&m=student&adv=0&mech=laplace&topic=single
+              </Link>
             </p>
             <p>
               <strong className="text-indigo-400">Demo 2 (Gaussian):</strong>{" "}
-              /simulator?d=small_integers&q=sum&e=1&s=15&r=500&seed=42&m=student&adv=0&mech=gaussian&topic=single&dl=0.00001
+              <Link href="/simulator?d=small_integers&q=sum&e=1&s=15&r=500&seed=42&m=student&adv=0&mech=gaussian&topic=single&dl=0.00001" className="text-indigo-400 hover:text-indigo-300 underline">
+                /simulator?d=small_integers&q=sum&e=1&s=15&r=500&seed=42&m=student&adv=0&mech=gaussian&topic=single&dl=0.00001
+              </Link>
             </p>
             <p>
               <strong className="text-indigo-400">Composition:</strong>{" "}
-              /simulator?d=small_integers&q=sum&e=0.5&s=15&r=100&m=academic&adv=0&mech=laplace&topic=comp
+              <Link href="/simulator?d=small_integers&q=sum&e=0.5&s=15&r=100&m=academic&adv=0&mech=laplace&topic=comp" className="text-indigo-400 hover:text-indigo-300 underline">
+                /simulator?d=small_integers&q=sum&e=0.5&s=15&r=100&m=academic&adv=0&mech=laplace&topic=comp
+              </Link>
             </p>
           </div>
         </section>
