@@ -10,12 +10,26 @@ permissions:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
     steps:
+      - name: Check required secrets
+        env:
+          HAS_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+          HAS_ORG: ${{ secrets.VERCEL_ORG_ID != '' }}
+          HAS_PROJECT: ${{ secrets.VERCEL_PROJECT_ID != '' }}
+        run: |
+          missing=()
+          if [ "$HAS_TOKEN" != "true" ]; then missing+=("VERCEL_TOKEN"); fi
+          if [ "$HAS_ORG" != "true" ]; then missing+=("VERCEL_ORG_ID"); fi
+          if [ "$HAS_PROJECT" != "true" ]; then missing+=("VERCEL_PROJECT_ID"); fi
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}. Configure them in Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -27,10 +41,10 @@ jobs:
         run: npm install -g vercel@44
 
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build
-        run: vercel build --prod
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to production
-        run: vercel deploy --prebuilt --prod
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
