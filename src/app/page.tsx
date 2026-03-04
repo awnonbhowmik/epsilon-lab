@@ -39,8 +39,8 @@ export default function Home() {
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       {/* Nav */}
       <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-baseline gap-1">
-          <span className="text-xl font-bold text-indigo-400">ε</span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="EpsilonLab logo" width={28} height={28} />
           <span className="text-xl font-bold text-gray-100">EpsilonLab</span>
         </Link>
         <div className="flex gap-4 text-sm text-gray-400">
@@ -119,11 +119,11 @@ export default function Home() {
         </section>
 
         {/* Screenshots */}
-        <section className="max-w-5xl mx-auto px-6 py-16">
+        <section className="max-w-6xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-bold text-center mb-10">
             See It in Action
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               { label: "Simulator", src: "/screenshots/simulator.png" },
               { label: "Charts", src: "/screenshots/charts.png" },
@@ -136,11 +136,11 @@ export default function Home() {
                 <Image
                   src={item.src}
                   alt={`${item.label} screenshot`}
-                  width={600}
-                  height={400}
+                  width={800}
+                  height={500}
                   className="w-full h-auto"
                 />
-                <p className="text-center text-xs text-gray-500 py-2">
+                <p className="text-center text-sm text-gray-500 py-3">
                   {item.label}
                 </p>
               </div>
