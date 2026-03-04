@@ -4,13 +4,16 @@ import { APP_VERSION } from "@/lib/version";
 const productLinks = [
   { label: "Simulator", href: "/simulator" },
   { label: "Presets", href: "/for-instructors" },
-  { label: "Comparison", href: "/compare" },
+  { label: "Classroom Pack", href: "/classroom-pack" },
 ];
 
 const resourceLinks = [
+  { label: "Lesson Plan", href: "/lesson-plan" },
+  { label: "Compare", href: "/compare" },
+  { label: "Composition", href: "/composition" },
   { label: "Appendix", href: "/appendix" },
   { label: "References", href: "/references" },
-  { label: "Lesson Plan", href: "/lesson-plan" },
+  { label: "Methodology", href: "/methodology" },
 ];
 
 const companyLinks = [
@@ -18,10 +21,6 @@ const companyLinks = [
   { label: "Contact", href: "/contact" },
   { label: "License", href: "/license" },
   { label: "Privacy", href: "/privacy" },
-  {
-    label: "Report a Bug",
-    href: "mailto:contact@epsilonlab.org?subject=EpsilonLab%20Bug%20Report",
-  },
 ];
 
 export default function Footer() {

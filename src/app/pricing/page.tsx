@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const tiers = [
@@ -31,8 +32,8 @@ const tiers = [
       "Instructor materials",
       "Email support",
     ],
-    cta: "Start Free Trial",
-    href: "/contact",
+    cta: "Instructor License Request",
+    href: "/contact?intent=instructor",
     highlight: true,
   },
   {
@@ -47,33 +48,30 @@ const tiers = [
       "Priority support",
       "Custom demos",
     ],
-    cta: "Start Free Trial",
-    href: "/contact",
+    cta: "Institutional Licensing",
+    href: "/contact?intent=institution",
     highlight: false,
   },
+];
+
+const licensingSteps = [
+  "Submit a request via the contact form.",
+  "We review your request and follow up within 48 hours.",
+  "You receive a license token and setup instructions.",
+  "Activate your license — no on-site payment required yet.",
+  "Reach out anytime for support or renewals.",
 ];
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-baseline gap-1">
-          <span className="text-xl font-bold text-indigo-400">ε</span>
-          <span className="text-xl font-bold text-gray-100">EpsilonLab</span>
-        </Link>
-        <div className="flex gap-4 text-sm text-gray-400">
-          <Link href="/simulator" className="hover:text-indigo-300">Simulator</Link>
-          <Link href="/for-instructors" className="hover:text-indigo-300">Instructors</Link>
-          <Link href="/pricing" className="text-indigo-300">Pricing</Link>
-          <Link href="/contact" className="hover:text-indigo-300">Contact</Link>
-        </div>
-      </nav>
+      <Header />
 
       <main className="flex-1 max-w-5xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-bold text-center mb-4">Pricing</h1>
         <p className="text-gray-400 text-center mb-12 max-w-xl mx-auto">
           EpsilonLab is free for students. Instructors and institutions can
-          contact us for licensing.
+          request a license below.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -114,6 +112,16 @@ export default function PricingPage() {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* How licensing works */}
+        <div className="mt-12 max-w-2xl mx-auto border border-gray-800 rounded-lg p-6 bg-gray-900/50">
+          <h3 className="text-lg font-bold mb-3">How Licensing Works</h3>
+          <ol className="list-decimal list-inside text-sm text-gray-400 space-y-2">
+            {licensingSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
         </div>
 
         <p className="text-center text-gray-500 text-sm mt-10">
