@@ -36,7 +36,7 @@ export default function ContactPage() {
           institution: formData.institution,
           message: formData.message,
         },
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
       );
 
       setStatus("success");
