@@ -123,7 +123,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-center mb-10">
             See It in Action
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-8">
             {[
               { label: "Simulator", src: "/screenshots/simulator.png" },
               { label: "Charts", src: "/screenshots/charts.png" },
