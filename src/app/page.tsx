@@ -5,25 +5,29 @@ const features = [
   {
     title: "Interactive Simulator",
     desc: "Adjust ε, δ, sensitivity and observe results instantly.",
+    href: "/simulator",
   },
   {
     title: "Mechanism Comparison",
     desc: "Explore Laplace and Gaussian mechanisms visually.",
+    href: "/compare",
   },
   {
     title: "Classroom Presets",
     desc: "Prebuilt demos for lectures and tutorials.",
+    href: "/for-instructors#presets",
   },
   {
     title: "Export & Classroom Pack",
     desc: "Generate PDFs and lecture-ready materials.",
+    href: "/classroom-pack",
   },
 ];
 
 const useCases = [
-  { role: "Instructors", desc: "Demonstrate DP concepts live" },
-  { role: "Students", desc: "Experiment and build intuition" },
-  { role: "Researchers", desc: "Illustrate privacy-utility tradeoffs" },
+  { role: "Instructors", desc: "Demonstrate DP concepts live", href: "/for-instructors" },
+  { role: "Students", desc: "Experiment and build intuition", href: "/simulator" },
+  { role: "Researchers", desc: "Illustrate privacy-utility tradeoffs", href: "/methodology" },
 ];
 
 export default function Home() {
@@ -83,13 +87,14 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-center mb-10">Features</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((f) => (
-              <div
+              <Link
                 key={f.title}
-                className="border border-gray-800 rounded-lg p-5 bg-gray-900/50"
+                href={f.href}
+                className="border border-gray-800 rounded-lg p-5 bg-gray-900/50 hover:border-indigo-500 transition-colors block"
               >
                 <h3 className="font-semibold text-indigo-300 mb-2">{f.title}</h3>
                 <p className="text-sm text-gray-400">{f.desc}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -99,12 +104,12 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-center mb-10">Use Cases</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             {useCases.map((uc) => (
-              <div key={uc.role} className="p-6">
+              <Link key={uc.role} href={uc.href} className="p-6 block hover:bg-gray-900/50 rounded-lg transition-colors">
                 <h3 className="text-lg font-bold text-indigo-300 mb-2">
                   {uc.role}
                 </h3>
                 <p className="text-sm text-gray-400">{uc.desc}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
