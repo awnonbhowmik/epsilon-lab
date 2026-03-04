@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import DiagnosticsPanel from "@/components/DiagnosticsPanel";
 
 const features = [
   {
@@ -120,12 +122,23 @@ export default function Home() {
             See It in Action
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {["Simulator", "Charts", "Composition Demo"].map((label) => (
+            {[
+              { label: "Simulator", src: "/screenshots/simulator.png" },
+              { label: "Charts", src: "/screenshots/charts.png" },
+              { label: "Composition Demo", src: "/screenshots/composition.png" },
+            ].map((item) => (
               <div
-                key={label}
-                className="border border-gray-800 rounded-lg bg-gray-900/50 h-48 flex items-center justify-center text-gray-600 text-sm"
+                key={item.label}
+                className="border border-gray-800 rounded-lg bg-gray-900/50 overflow-hidden"
               >
-                {label} — screenshot placeholder
+                <img
+                  src={item.src}
+                  alt={`${item.label} screenshot`}
+                  className="w-full h-auto"
+                />
+                <p className="text-center text-xs text-gray-500 py-2">
+                  {item.label}
+                </p>
               </div>
             ))}
           </div>
@@ -155,6 +168,7 @@ export default function Home() {
       </main>
 
       <Footer />
+      <DiagnosticsPanel />
     </div>
   );
 }

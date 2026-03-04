@@ -1,5 +1,6 @@
 import type { SimRequest, SimResponse } from "./types";
 import { mapSimResponse } from "./utils";
+import { logError, logInfo } from "@/lib/logger";
 
 // Shape of the WASM module loaded from dp_engine.js
 interface WasmModule {
@@ -20,14 +21,11 @@ interface WasmModule {
 let wasmReady: Promise<void> | null = null;
 let wasmMod: WasmModule | null = null;
 
-async function initWasm(): Promise<WasmModule> {
-  if (wasmMod !== null) return wasmMod;
-
+async function loadWasmOnce(): Promise<WasmModule> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mod = (await import("@/wasm/dp_engine/dp_engine.js")) as any as WasmModule;
 
   if (!wasmReady) {
-    // wasm-pack bundler target exports a default init() function.
     wasmReady =
       typeof mod.default === "function" ? mod.default() : Promise.resolve();
     await wasmReady;
@@ -35,6 +33,29 @@ async function initWasm(): Promise<WasmModule> {
 
   wasmMod = mod;
   return mod;
+}
+
+async function initWasm(): Promise<WasmModule> {
+  if (wasmMod !== null) return wasmMod;
+
+  try {
+    return await loadWasmOnce();
+  } catch (err) {
+    logError("WASM load failed, retrying once", err);
+    // Reset state for retry
+    wasmReady = null;
+    wasmMod = null;
+    try {
+      const mod = await loadWasmOnce();
+      logInfo("WASM loaded successfully on retry");
+      return mod;
+    } catch (retryErr) {
+      logError("WASM load failed after retry", retryErr);
+      throw new Error(
+        "Failed to load computation engine. Please refresh the page.",
+      );
+    }
+  }
 }
 
 /**
