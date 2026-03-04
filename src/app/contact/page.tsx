@@ -33,6 +33,7 @@ export default function ContactPage() {
         </Link>
         <div className="flex gap-4 text-sm text-gray-400">
           <Link href="/simulator" className="hover:text-indigo-300">Simulator</Link>
+          <Link href="/for-instructors" className="hover:text-indigo-300">Instructors</Link>
           <Link href="/pricing" className="hover:text-indigo-300">Pricing</Link>
           <Link href="/contact" className="text-indigo-300">Contact</Link>
         </div>
