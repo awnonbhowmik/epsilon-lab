@@ -10,7 +10,8 @@ export default function MethodologyPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <nav className="bg-gray-900 border-b border-gray-800 px-6 py-2 flex flex-wrap gap-4 text-xs">
-        <Link href="/" className="text-indigo-400 hover:text-indigo-300 underline">Simulator</Link>
+        <Link href="/" className="text-indigo-400 hover:text-indigo-300 underline">Home</Link>
+        <Link href="/simulator" className="text-indigo-400 hover:text-indigo-300 underline">Simulator</Link>
         <Link href="/compare" className="text-indigo-400 hover:text-indigo-300 underline">Compare</Link>
         <Link href="/composition" className="text-indigo-400 hover:text-indigo-300 underline">Composition</Link>
         <Link href="/appendix" className="text-indigo-400 hover:text-indigo-300 underline">Appendix</Link>

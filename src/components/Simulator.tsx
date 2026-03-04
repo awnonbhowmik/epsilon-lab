@@ -244,9 +244,9 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
       {!isEmbed && (
         <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-indigo-400">
+            <Link href="/" className="text-2xl font-bold tracking-tight text-indigo-400 no-underline hover:opacity-80 transition-opacity">
               ε EpsilonLab
-            </h1>
+            </Link>
             <span className="hidden sm:block text-xs text-gray-500 font-mono">
               Differential Privacy Teaching Simulator
             </span>
