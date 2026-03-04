@@ -88,7 +88,7 @@ export function __wbg_msCrypto_bd5a034af96bcba6(arg0) {
     return ret;
 }
 export function __wbg_new_a70fbab9066b301f() {
-    const ret = new Array();
+    const ret = [];
     return ret;
 }
 export function __wbg_new_ab79df5bd7c26067() {

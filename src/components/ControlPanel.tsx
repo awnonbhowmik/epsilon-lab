@@ -3,7 +3,6 @@
 import { DATASETS } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
 import type { Mechanism, QueryType, Topic } from "@/lib/dp/types";
-import { defaultSensitivity } from "@/lib/dp/utils";
 
 interface Props {
   datasetId: DatasetId;

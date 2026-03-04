@@ -1,14 +1,30 @@
 import type { SimRequest, SimResponse } from "./types";
 import { mapSimResponse } from "./utils";
 
+// Shape of the WASM module loaded from dp_engine.js
+interface WasmModule {
+  default?: (() => Promise<void>) | Record<string, unknown>;
+  simulate_query(
+    values: Float64Array,
+    query_type: string,
+    mechanism: string,
+    epsilon: number,
+    sensitivity: number,
+    runs: number,
+    delta?: number | null,
+    seed?: string | null,
+  ): Record<string, unknown>;
+}
+
 // Module-level singleton: the WASM module is initialised once per page load.
 let wasmReady: Promise<void> | null = null;
-let wasmMod: any = null;
+let wasmMod: WasmModule | null = null;
 
-async function initWasm(): Promise<any> {
+async function initWasm(): Promise<WasmModule> {
   if (wasmMod !== null) return wasmMod;
 
-  const mod: any = await import("@/wasm/dp_engine/dp_engine.js");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mod = (await import("@/wasm/dp_engine/dp_engine.js")) as any as WasmModule;
 
   if (!wasmReady) {
     // wasm-pack bundler target exports a default init() function.
@@ -68,7 +84,7 @@ export async function simulate(req: SimRequest): Promise<SimResponse> {
     req.epsilon,
     req.sensitivity,
     req.runs,
-    mechanism === "gaussian" ? req.delta : null,
+    mechanism === "gaussian" ? (req.delta ?? null) : null,
     seedStr
   );
 

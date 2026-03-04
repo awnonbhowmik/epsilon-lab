@@ -46,8 +46,6 @@ const VALID_DATASETS = new Set<string>([
 const VALID_QUERIES = new Set<string>(["sum", "mean", "count"]);
 const VALID_MODES = new Set<string>(["student", "academic"]);
 const VALID_MECHANISMS = new Set<string>(["laplace", "gaussian"]);
-const VALID_TOPICS = new Set<string>(["single_query", "composition"]);
-
 /**
  * Encode simulator state into URL search parameters.
  */

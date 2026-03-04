@@ -40,7 +40,7 @@ describe("mapSimResponse", () => {
   });
 
   it("throws on null input", () => {
-    expect(() => mapSimResponse(null as any)).toThrow("non-object");
+    expect(() => mapSimResponse(null as unknown as Record<string, unknown>)).toThrow("non-object");
   });
 
   it("throws on missing trueValue", () => {
