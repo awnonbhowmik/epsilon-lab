@@ -34,6 +34,7 @@ const useCases = [
 
 export default function Home() {
   return (
+    <ErrorBoundary>
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       {/* Nav */}
       <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
@@ -170,5 +171,6 @@ export default function Home() {
       <Footer />
       <DiagnosticsPanel />
     </div>
+    </ErrorBoundary>
   );
 }

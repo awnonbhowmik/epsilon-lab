@@ -226,6 +226,7 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
         footer.innerHTML = `<span>EpsilonLab</span><span>${new Date().toLocaleDateString()}</span>`;
         container.appendChild(footer);
 
+        // Clamp to 4096px — common browser canvas size limit
         const maxDim = 4096;
         const opts = {
           pixelRatio: 2,
