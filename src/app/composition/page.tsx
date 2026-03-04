@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import MathTex from "@/components/Math";
 import {
   LineChart,
   Line,
@@ -102,16 +103,16 @@ export default function CompositionPage() {
             <div className="bg-gray-900 border border-gray-700 rounded p-4 space-y-2">
               <h2 className="text-sm font-semibold text-indigo-300">Basic Sequential Composition Theorem</h2>
               <p className="text-sm text-gray-400">
-                If mechanisms M_1, ..., M_k satisfy \u03B5_i-DP respectively, their sequential composition satisfies:
+                If mechanisms <MathTex>{"M_1, \\ldots, M_k"}</MathTex> satisfy <MathTex>{"\\varepsilon_i"}</MathTex>-DP respectively, their sequential composition satisfies:
               </p>
-              <p className="text-sm font-mono text-indigo-200">
-                \u03B5_total = \u03A3 \u03B5_i
+              <p className="text-sm text-indigo-200">
+                <MathTex display>{"\\varepsilon_{\\text{total}} = \\sum_i \\varepsilon_i"}</MathTex>
               </p>
               <p className="text-sm text-gray-400">
-                For (\u03B5, \u03B4)-DP mechanisms:
+                For <MathTex>{"(\\varepsilon, \\delta)"}</MathTex>-DP mechanisms:
               </p>
-              <p className="text-sm font-mono text-indigo-200">
-                \u03B5_total = \u03A3 \u03B5_i, \u03B4_total = \u03A3 \u03B4_i
+              <p className="text-sm text-indigo-200">
+                <MathTex display>{"\\varepsilon_{\\text{total}} = \\sum_i \\varepsilon_i, \\quad \\delta_{\\text{total}} = \\sum_i \\delta_i"}</MathTex>
               </p>
               <p className="text-xs text-gray-500">
                 Reference: Dwork, C., McSherry, F., Nissim, K., & Smith, A. (2006).
@@ -262,10 +263,10 @@ export default function CompositionPage() {
                 Basic composition adds privacy costs linearly: \u03B5_total = k\u03B5. This is a valid upper bound but can be loose when the number of queries k is large.
               </p>
               <p className="text-sm text-gray-400">
-                The <em>advanced composition theorem</em> (Dwork, Rothblum, & Vadhan, 2010) shows that for k-fold adaptive composition of (\u03B5, \u03B4)-DP mechanisms, the total privacy cost grows proportionally to \u221Ak rather than k. Specifically, for any \u03B4\u2032 &gt; 0, the composed mechanism satisfies (\u03B5\u2032, k\u03B4 + \u03B4\u2032)-DP where:
+                The <em>advanced composition theorem</em> (Dwork, Rothblum, & Vadhan, 2010) shows that for k-fold adaptive composition of <MathTex>{"(\\varepsilon, \\delta)"}</MathTex>-DP mechanisms, the total privacy cost grows proportionally to <MathTex>{"\\sqrt{k}"}</MathTex> rather than <MathTex>{"k"}</MathTex>. Specifically, for any <MathTex>{"\\delta' > 0"}</MathTex>, the composed mechanism satisfies <MathTex>{"(\\varepsilon', k\\delta + \\delta')"}</MathTex>-DP where:
               </p>
-              <p className="text-sm font-mono text-indigo-200">
-                \u03B5\u2032 = \u03B5\u221A(2k ln(1/\u03B4\u2032)) + k\u03B5(e^\u03B5 - 1)
+              <p className="text-sm text-indigo-200">
+                <MathTex display>{"\\varepsilon' = \\varepsilon\\sqrt{2k\\ln(1/\\delta')} + k\\varepsilon(e^{\\varepsilon} - 1)"}</MathTex>
               </p>
               <p className="text-sm text-gray-400">
                 This means that repeated access to a dataset is less costly than the basic bound suggests, which is critical for practical applications such as iterative model training.
@@ -275,7 +276,7 @@ export default function CompositionPage() {
             <div className="bg-gray-900 border border-gray-700 rounded p-4 space-y-3">
               <h2 className="text-sm font-semibold text-indigo-300">Why Advanced Composition Is Tighter</h2>
               <p className="text-sm text-gray-400">
-                The basic bound treats each query as fully independent in terms of worst-case information leakage. Advanced composition leverages the probabilistic structure of the noise to achieve a tighter bound. The key insight is that the worst-case privacy loss across multiple queries concentrates around its expectation, so the total loss scales with \u221Ak instead of k.
+                The basic bound treats each query as fully independent in terms of worst-case information leakage. Advanced composition leverages the probabilistic structure of the noise to achieve a tighter bound. The key insight is that the worst-case privacy loss across multiple queries concentrates around its expectation, so the total loss scales with <MathTex>{"\\sqrt{k}"}</MathTex> instead of <MathTex>{"k"}</MathTex>.
               </p>
               <p className="text-sm text-gray-400">
                 Even tighter accounting is possible with Renyi Differential Privacy (Mironov, 2017), which tracks the privacy loss using Renyi divergences and yields optimal composition bounds for many practical scenarios.

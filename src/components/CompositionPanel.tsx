@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { Mechanism } from "@/lib/dp/types";
+import MathTex from "./Math";
 
 interface Props {
   mechanism: Mechanism;
@@ -60,14 +61,14 @@ export default function CompositionPanel({ mechanism, isAcademic }: Props) {
         </div>
       )}
       {isAcademic && (
-        <div className="text-sm text-gray-300 font-mono space-y-2 bg-gray-950 border border-gray-700 rounded p-3">
+        <div className="text-sm text-gray-300 space-y-2 bg-gray-950 border border-gray-700 rounded p-3">
           <p className="text-indigo-300 font-semibold">Basic Sequential Composition Theorem</p>
           <p>
-            If mechanisms M₁, …, Mₖ satisfy εᵢ-DP respectively (and δᵢ-DP for
+            If mechanisms <MathTex>{"M_1, \\ldots, M_k"}</MathTex> satisfy <MathTex>{"\\varepsilon_i"}</MathTex>-DP respectively (and <MathTex>{"\\delta_i"}</MathTex>-DP for
             the Gaussian case), their sequential composition satisfies:
           </p>
           <p className="text-indigo-200">
-            ε_total = Σᵢ εᵢ{mechanism === "gaussian" && ", δ_total = Σᵢ δᵢ"}
+            <MathTex display>{"\\varepsilon_{\\text{total}} = \\sum_i \\varepsilon_i" + (mechanism === "gaussian" ? ",\\quad \\delta_{\\text{total}} = \\sum_i \\delta_i" : "")}</MathTex>
           </p>
           <p className="text-xs text-gray-500">
             Note: Advanced composition (Dwork et al., 2010) provides tighter bounds

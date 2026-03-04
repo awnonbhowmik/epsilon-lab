@@ -3,6 +3,7 @@
 import { DATASETS } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
 import type { Mechanism, QueryType, Topic } from "@/lib/dp/types";
+import MathTex from "./Math";
 
 interface Props {
   datasetId: DatasetId;
@@ -99,8 +100,8 @@ export default function ControlPanel({
         </select>
         <p className="text-xs text-gray-500 mt-1">{currentDataset.description}</p>
         {isAcademic && (
-          <p className="text-xs text-indigo-400 mt-1 font-mono">
-            n = {currentDataset.values.length}, values ∈ [{Math.min(...currentDataset.values).toFixed(2)}, {Math.max(...currentDataset.values).toFixed(2)}]
+          <p className="text-xs text-indigo-400 mt-1">
+            <MathTex>{"n = " + currentDataset.values.length + ",\\; \\text{values} \\in [" + Math.min(...currentDataset.values).toFixed(2) + ",\\, " + Math.max(...currentDataset.values).toFixed(2) + "]"}</MathTex>
           </p>
         )}
       </div>
@@ -123,8 +124,8 @@ export default function ControlPanel({
           </p>
         )}
         {isAcademic && (
-          <p className="text-xs text-indigo-400 mt-1 font-mono">
-            {queryType === "sum" ? "f(x) = Σxᵢ" : queryType === "mean" ? "f(x) = (1/n)Σxᵢ" : "f(x) = |x|"}
+          <p className="text-xs text-indigo-400 mt-1">
+            <MathTex>{queryType === "sum" ? "f(x) = \\sum x_i" : queryType === "mean" ? "f(x) = \\frac{1}{n}\\sum x_i" : "f(x) = |x|"}</MathTex>
           </p>
         )}
       </div>
@@ -141,10 +142,10 @@ export default function ControlPanel({
           </p>
         )}
         {isAcademic && (
-          <p className="text-xs text-indigo-400 mb-2 font-mono">
-            {mechanism === "laplace"
-              ? "Laplace scale b = Δf/ε  |  Pr[output ∈ S] ≤ e^ε · Pr[output ∈ S | adjacent input]"
-              : "Gaussian σ = Δf·√(2ln(1.25/δ))/ε  |  (ε, δ)-DP"}
+          <p className="text-xs text-indigo-400 mb-2">
+            <MathTex>{mechanism === "laplace"
+              ? "b = \\Delta f\\,/\\,\\varepsilon \\;|\\; \\Pr[\\text{output} \\in S] \\leq e^{\\varepsilon} \\cdot \\Pr[\\text{output} \\in S \\mid \\text{adj. input}]"
+              : "\\sigma = \\Delta f \\cdot \\sqrt{2\\ln(1.25/\\delta)}\\,/\\,\\varepsilon \\;|\\; (\\varepsilon,\\delta)\\text{-DP}"}</MathTex>
           </p>
         )}
         <div className="flex items-center gap-3">
@@ -234,7 +235,7 @@ export default function ControlPanel({
             <div>
               <label className="block text-sm font-semibold text-gray-300 mb-1">
                 Sensitivity (Δf)
-                {isAcademic && <span className="text-indigo-400 font-mono"> = max |f(x) - f(x&apos;)|</span>}
+                {isAcademic && <span className="text-indigo-400"> = <MathTex>{"\\max |f(x) - f(x')|"}</MathTex></span>}
               </label>
               <input
                 type="number"

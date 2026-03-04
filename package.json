@@ -13,6 +13,7 @@
   "dependencies": {
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.0",
+    "katex": "^0.16.33",
     "next": "16.1.6",
     "papaparse": "^5.5.3",
     "react": "19.2.3",
