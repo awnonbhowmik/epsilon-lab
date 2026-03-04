@@ -30,8 +30,8 @@ const COMPARISON_ROWS = [
   },
   {
     aspect: "Noise distribution",
-    laplace: "laplace",
-    gaussian: "gaussian",
+    laplace: "Laplace(0, b) where b = Δf / ε",
+    gaussian: "N(0, σ²) where σ = (Δf · √(2 ln(1.25/δ))) / ε",
     laplaceLatex: "\\text{Laplace}(0, b) \\text{ where } b = \\Delta f\\,/\\,\\varepsilon",
     gaussianLatex: "\\mathcal{N}(0, \\sigma^2) \\text{ where } \\sigma = \\frac{\\Delta f \\cdot \\sqrt{2\\ln(1.25/\\delta)}}{\\varepsilon}",
   },

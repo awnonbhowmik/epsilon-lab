@@ -101,7 +101,7 @@ export default function ControlPanel({
         <p className="text-xs text-gray-500 mt-1">{currentDataset.description}</p>
         {isAcademic && (
           <p className="text-xs text-indigo-400 mt-1">
-            <MathTex>{"n = " + currentDataset.values.length + ",\\; \\text{values} \\in [" + Math.min(...currentDataset.values).toFixed(2) + ",\\, " + Math.max(...currentDataset.values).toFixed(2) + "]"}</MathTex>
+                        <MathTex>{`n = ${currentDataset.values.length},\\; \\text{values} \\in [${Math.min(...currentDataset.values).toFixed(2)},\\, ${Math.max(...currentDataset.values).toFixed(2)}]`}</MathTex>
           </p>
         )}
       </div>
