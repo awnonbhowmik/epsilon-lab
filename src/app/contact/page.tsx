@@ -1,27 +1,52 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import emailjs from "@emailjs/browser";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 
 export default function ContactPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    institution: "",
+    message: "",
+  });
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+
+  function handleChange(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const institution = (form.elements.namedItem("institution") as HTMLInputElement).value;
-    const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value;
+    setLoading(true);
+    setStatus("idle");
 
-    const subject = encodeURIComponent(`EpsilonLab Inquiry from ${name}`);
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\nInstitution: ${institution}\n\n${message}`
-    );
+    try {
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        {
+          name: formData.name,
+          email: formData.email,
+          institution: formData.institution,
+          message: formData.message,
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
+      );
 
-    window.location.href = `mailto:contact@epsilonlab.org?subject=${subject}&body=${body}`;
-    setSubmitted(true);
+      setStatus("success");
+      setFormData({ name: "", email: "", institution: "", message: "" });
+    } catch (error) {
+      console.error("EmailJS error:", error);
+      setStatus("error");
+    }
+
+    setLoading(false);
   }
 
   return (
@@ -46,19 +71,25 @@ export default function ContactPage() {
           Fill out the form and we will be in touch.
         </p>
 
-        {submitted ? (
+        {status === "success" ? (
           <div className="border border-indigo-500 rounded-lg p-6 bg-indigo-950/30 text-center">
             <p className="text-indigo-300 font-semibold mb-1">
               Thank you for reaching out!
             </p>
             <p className="text-sm text-gray-400">
-              Your email client should have opened with a pre-filled message. If
-              not, please email us directly at{" "}
-              <span className="text-indigo-400">contact@epsilonlab.org</span>.
+              Your message has been sent. We will get back to you shortly.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
+            {status === "error" && (
+              <div className="border border-red-500 rounded-lg p-4 bg-red-950/30 text-center">
+                <p className="text-red-300 text-sm font-semibold">
+                  Something went wrong. Please try again later.
+                </p>
+              </div>
+            )}
+
             <div>
               <label htmlFor="name" className="block text-sm font-semibold mb-1">
                 Name <span className="text-red-400">*</span>
@@ -68,6 +99,8 @@ export default function ContactPage() {
                 name="name"
                 type="text"
                 required
+                value={formData.name}
+                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:border-indigo-500 focus:outline-none"
                 placeholder="Your name"
               />
@@ -82,6 +115,8 @@ export default function ContactPage() {
                 name="email"
                 type="email"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:border-indigo-500 focus:outline-none"
                 placeholder="you@university.edu"
               />
@@ -95,6 +130,8 @@ export default function ContactPage() {
                 id="institution"
                 name="institution"
                 type="text"
+                value={formData.institution}
+                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:border-indigo-500 focus:outline-none"
                 placeholder="University / Organization"
               />
@@ -109,6 +146,8 @@ export default function ContactPage() {
                 name="message"
                 required
                 rows={5}
+                value={formData.message}
+                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:border-indigo-500 focus:outline-none"
                 placeholder="Tell us about your needs…"
               />
@@ -116,9 +155,10 @@ export default function ContactPage() {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors"
+              disabled={loading}
+              className="w-full py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Send Message
+              {loading ? "Sending…" : "Send Message"}
             </button>
           </form>
         )}

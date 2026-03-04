@@ -32,6 +32,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## EmailJS Setup (Contact Form)
+
+The contact form uses [EmailJS](https://www.emailjs.com/) to send messages directly from the browser — no backend required.
+
+1. Create a free account at <https://www.emailjs.com/>
+2. Copy `.env.local.example` to `.env.local` and fill in the three values:
+
+| Variable | Where to find it |
+|---|---|
+| `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | Dashboard → **Email Services** → select your service → Service ID |
+| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | Dashboard → **Email Templates** → select your template → Template ID |
+| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Dashboard → **Account** → **General** tab → **Public Key** section |
+
+> **Note:** The public key was previously called "User ID" in older EmailJS versions.
+
 ## For Instructors
 
 See [docs/INSTRUCTORS.md](docs/INSTRUCTORS.md) for detailed guidance on:
