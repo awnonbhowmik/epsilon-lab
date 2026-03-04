@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function LessonPlanPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -6,9 +8,9 @@ export default function LessonPlanPage() {
           <h1 className="text-2xl font-bold tracking-tight text-indigo-400">
             ε EpsilonLab — Instructor Lesson Plan
           </h1>
-          <a href="/" className="text-xs text-indigo-400 hover:text-indigo-300 underline">
+          <Link href="/" className="text-xs text-indigo-400 hover:text-indigo-300 underline">
             ← Back to home
-          </a>
+          </Link>
         </div>
       </header>
 

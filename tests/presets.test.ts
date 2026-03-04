@@ -5,7 +5,6 @@ import {
   getPresetById,
   presetToUrl,
 } from "../src/lib/presets/presets";
-import type { Preset } from "../src/lib/presets/presets";
 import { decodeShareState } from "../src/lib/share/urlState";
 
 describe("presets library", () => {

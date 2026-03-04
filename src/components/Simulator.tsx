@@ -12,9 +12,11 @@ import References from "./References";
 import { APP_NAME, APP_VERSION } from "@/lib/version";
 import CompositionPanel from "./CompositionPanel";
 import PresetPicker from "./PresetPicker";
-import { DATASETS } from "@/lib/datasets";
+import { DATASETS, type Dataset } from "@/lib/datasets";
 import type { DatasetId } from "@/lib/datasets";
 import type { Mechanism, QueryType, Topic, SimRequest, SimResponse } from "@/lib/dp/types";
+import DatasetUpload from "./DatasetUpload";
+import type { DatasetUploadResult } from "./DatasetUpload";
 import { defaultSensitivity } from "@/lib/dp/utils";
 import { simulate } from "@/lib/dp/wasmClient";
 import { useDebouncedValue } from "@/lib/dp/useDebouncedValue";
@@ -78,6 +80,8 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
   const [result, setResult] = useState<SimResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [customDataset, setCustomDataset] = useState<Dataset | null>(null);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
   const [presetsOpen, setPresetsOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -88,7 +92,9 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
   // Debounce sensitivity changes so the utility curve isn't recomputed on every tick.
   const debouncedSensitivity = useDebouncedValue(sensitivity, 300);
 
-  const currentDataset = DATASETS.find((d) => d.id === datasetId)!;
+  const currentDataset = customDataset && datasetId === ("csv_upload" as DatasetId)
+    ? customDataset
+    : DATASETS.find((d) => d.id === datasetId)!;
 
   const parsedSeed = useMemo(() => {
     const trimmed = seed.trim();
@@ -132,6 +138,19 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
       if (urlDebounceRef.current) clearTimeout(urlDebounceRef.current);
     };
   }, [datasetId, queryType, epsilon, sensitivity, runs, seed, isAcademic, advancedOpen, mechanism, topic, delta, router]);
+
+  const handleCsvDataset = useCallback((result: DatasetUploadResult) => {
+    const ds: Dataset = {
+      id: "csv_upload" as DatasetId,
+      label: `CSV: ${result.columnName}`,
+      description: `Uploaded column "${result.columnName}" (${result.values.length} rows)`,
+      values: result.values,
+    };
+    setCustomDataset(ds);
+    setDatasetId("csv_upload" as DatasetId);
+    setSensitivity(defaultSensitivity(queryType, result.values));
+    setCsvOpen(false);
+  }, [queryType]);
 
   const handleCopyLink = useCallback(async () => {
     try {
@@ -262,6 +281,7 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
         <nav className="bg-gray-900 border-b border-gray-800 px-6 py-1.5 flex flex-wrap gap-4 text-xs">
           <Link href="/compare" className="text-indigo-400 hover:text-indigo-300 underline">Compare</Link>
           <Link href="/composition" className="text-indigo-400 hover:text-indigo-300 underline">Composition</Link>
+          <Link href="/privacy-accounting" className="text-indigo-400 hover:text-indigo-300 underline">Privacy Accounting</Link>
           <Link href="/appendix" className="text-indigo-400 hover:text-indigo-300 underline">Appendix</Link>
           <Link href="/references" className="text-indigo-400 hover:text-indigo-300 underline">References</Link>
           <Link href="/methodology" className="text-indigo-400 hover:text-indigo-300 underline">Methodology</Link>
@@ -339,6 +359,21 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
               isRunning={isRunning}
               isAcademic={isAcademic}
             />
+
+            {/* CSV Upload */}
+            <div className="mt-4 border-t border-gray-700 pt-4">
+              <button
+                onClick={() => setCsvOpen((o) => !o)}
+                className="text-sm text-indigo-400 hover:text-indigo-300 underline focus:outline-none"
+              >
+                {csvOpen ? "▼" : "▶"} Upload CSV Dataset
+              </button>
+              {csvOpen && (
+                <div className="mt-3">
+                  <DatasetUpload onDatasetReady={handleCsvDataset} />
+                </div>
+              )}
+            </div>
           </aside>
 
           {/* Right: results + export buttons */}
@@ -470,6 +505,7 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
           <nav className="flex gap-4">
             <Link href="/compare" className="text-indigo-400/60 hover:text-indigo-300 underline">Compare</Link>
             <Link href="/composition" className="text-indigo-400/60 hover:text-indigo-300 underline">Composition</Link>
+            <Link href="/privacy-accounting" className="text-indigo-400/60 hover:text-indigo-300 underline">Privacy Accounting</Link>
             <Link href="/appendix" className="text-indigo-400/60 hover:text-indigo-300 underline">Appendix</Link>
             <Link href="/references" className="text-indigo-400/60 hover:text-indigo-300 underline">References</Link>
             <Link href="/methodology" className="text-indigo-400/60 hover:text-indigo-300 underline">Methodology</Link>

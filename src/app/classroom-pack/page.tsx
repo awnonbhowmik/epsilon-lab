@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ALL_PRESETS, presetToUrl } from "@/lib/presets/presets";
+import { ALL_PRESETS } from "@/lib/presets/presets";
 import type { Preset } from "@/lib/presets/presets";
 import { generateClassroomPack } from "@/lib/export/classroomPack";
 
@@ -13,7 +13,6 @@ export default function ClassroomPackPage() {
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState("");
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
-  const [cancelled, setCancelled] = useState(false);
   const cancelRef = useState({ current: false })[0];
 
   const togglePreset = (id: string) => {
@@ -31,7 +30,6 @@ export default function ClassroomPackPage() {
   const handleGenerate = async () => {
     if (selectedPresets.length < 3) return;
     setGenerating(true);
-    setCancelled(false);
     cancelRef.current = false;
     setPdfBlob(null);
 
@@ -58,7 +56,6 @@ export default function ClassroomPackPage() {
 
   const handleCancel = () => {
     cancelRef.current = true;
-    setCancelled(true);
     setGenerating(false);
     setProgress("Cancelled.");
   };
