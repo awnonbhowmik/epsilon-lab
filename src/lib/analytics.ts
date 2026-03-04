@@ -57,7 +57,6 @@ export function trackEvent(
 
   // Development / fallback: log to console
   if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
     console.debug("[analytics]", payload);
   }
 

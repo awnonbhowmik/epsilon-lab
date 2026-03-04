@@ -22,9 +22,13 @@ export async function POST(request: Request) {
 
     const session = await createCheckoutSession(plan as PlanType);
     return NextResponse.json(session);
-  } catch {
+  } catch (err) {
+    const message =
+      process.env.NODE_ENV === "development" && err instanceof Error
+        ? err.message
+        : "Failed to create checkout session.";
     return NextResponse.json(
-      { error: "Failed to create checkout session." },
+      { error: message },
       { status: 500 },
     );
   }

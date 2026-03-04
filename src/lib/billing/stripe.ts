@@ -40,7 +40,7 @@ export function getStripeClient(): null {
 export async function createCheckoutSession(
   plan: PlanType,
 ): Promise<CheckoutSessionResponse> {
-  const _priceId = PRODUCT_IDS[plan];
+  void PRODUCT_IDS[plan];
 
   // Development / mock mode
   return {

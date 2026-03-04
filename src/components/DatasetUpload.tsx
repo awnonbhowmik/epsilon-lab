@@ -147,7 +147,7 @@ export default function DatasetUpload({ onDatasetReady }: Props) {
             )}
           </div>
           <p className="text-xs text-gray-500">
-            n = {preview.length}, range = [{Math.min(...preview).toFixed(2)}, {Math.max(...preview).toFixed(2)}]
+            n = {preview.length}, range = [{preview.reduce((a, b) => Math.min(a, b), Infinity).toFixed(2)}, {preview.reduce((a, b) => Math.max(a, b), -Infinity).toFixed(2)}]
           </p>
 
           <button

@@ -1,12 +1,12 @@
 /**
  * Feature-flag system for free vs licensed capabilities.
  *
- * Licence tiers:
+ * License tiers:
  *   free        – simulator, presets, charts
  *   instructor  – classroom pack export, lesson plan, preset library management
  *   institution – privacy accountant, advanced composition tools, department access
  *
- * The current licence is derived from a `?license=` query-string parameter.
+ * The current license is derived from a `?license=` query-string parameter.
  * In a future version this can be replaced by real authentication / JWT tokens.
  */
 
@@ -58,7 +58,7 @@ export function isFeatureEnabled(tier: LicenseTier, feature: Feature): boolean {
 }
 
 /**
- * Parse the licence tier from a URL search-params string.
+ * Parse the license tier from a URL search-params string.
  *
  * Accepts `?license=instructor` or `?license=institution`.
  * Falls back to `"free"` for any other value.
