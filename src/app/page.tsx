@@ -119,7 +119,7 @@ export default function Home() {
 
         {/* Who it is for */}
         <section className="max-w-4xl mx-auto px-6 py-16">
-          <h2 className="text-2xl font-bold text-center mb-10">Who It's For</h2>
+          <h2 className="text-2xl font-bold text-center mb-10">Who It&apos;s For</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             {audiences.map((a) => (
               <div key={a.role} className="p-6 rounded-lg border border-gray-800 bg-gray-900/50">
