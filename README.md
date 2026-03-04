@@ -1,4 +1,4 @@
-# epsilon-lab
+# EpsilonLab
 
 EpsilonLab is an interactive differential privacy teaching simulator built with Next.js, TypeScript, and Tailwind CSS. It runs entirely in the browser using a Rust/WASM computation engine — no server or database required.
 
@@ -44,10 +44,12 @@ See [docs/INSTRUCTORS.md](docs/INSTRUCTORS.md) for detailed guidance on:
 ## Development
 
 ```bash
-npm run dev       # Start dev server
-npm run build     # Production build
-npm test          # Run tests
-npm run lint      # Lint
+npm run dev          # Start dev server
+npm run build        # Production build
+npm start            # Start production server
+npm test             # Run tests
+npm run test:watch   # Run tests in watch mode
+npm run lint         # Lint
 ```
 
 ## Architecture
