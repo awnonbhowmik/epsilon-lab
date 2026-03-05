@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { APP_NAME, APP_VERSION } from "@/lib/version";
+import { APP_NAME, APP_VERSION, BUILD_DATE } from "@/lib/version";
 import { encodeShareState } from "@/lib/share/urlState";
 import type { ShareState } from "@/lib/share/urlState";
 
@@ -174,7 +174,7 @@ export default function PressPage() {
             Cite {APP_NAME}
           </h2>
           <p className="text-sm text-gray-400">
-            Awnon Kumar Bhowmik ({new Date().getFullYear()}).{" "}
+            Awnon Kumar Bhowmik ({BUILD_DATE.slice(0, 4)}).{" "}
             <em>
               {APP_NAME}: Interactive Differential Privacy Simulation Platform
             </em>{" "}

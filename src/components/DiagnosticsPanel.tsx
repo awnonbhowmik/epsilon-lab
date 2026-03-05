@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { APP_NAME, APP_VERSION, BUILD_DATE, GIT_COMMIT } from "@/lib/version";
 import { getEnvironment } from "@/lib/env";
@@ -30,7 +30,12 @@ export default function DiagnosticsPanel() {
 
   const isSimulator = pathname === "/simulator" || pathname === "/embed";
 
-  const simState = isSimulator ? decodeShareState(searchParams) : null;
+  const searchString = searchParams.toString();
+  const simState = useMemo(
+    () => (isSimulator ? decodeShareState(searchParams) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isSimulator, searchString],
+  );
 
   const buildText = useCallback((): string => {
     const lines = [
