@@ -167,12 +167,21 @@ export default function DiagnosticsPanel() {
           </p>
         )}
       </div>
+
       <button
         onClick={handleCopy}
         className="w-full mt-2 px-3 py-1.5 text-xs rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
       >
         {copied ? "Copied!" : "Copy Diagnostics"}
       </button>
+      <a
+        href="/health"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs text-indigo-400 hover:underline"
+      >
+        Open full health page →
+      </a>
     </div>
   );
 }

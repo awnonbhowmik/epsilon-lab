@@ -1,13 +1,38 @@
+"use client";
+
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import PresetPicker from "@/components/PresetPicker";
 import ClassSessionChecklist from "@/components/ClassSessionChecklist";
+import MathTex from "@/components/Math";
 
-export const metadata = {
-  title: "For Instructors",
-  description:
-    "Quick start guide, demo presets, and LMS embedding instructions for teaching differential privacy with EpsilonLab.",
-};
+const EMBED_SNIPPET = `<iframe
+  src="https://epsilonlab.io/embed?mechanism=laplace&epsilon=1.0"
+  width="100%"
+  height="700"
+  frameborder="0"
+  allowfullscreen
+></iframe>`;
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard may fail */ }
+  }, [text]);
+  return (
+    <button
+      onClick={copy}
+      className="shrink-0 px-2 py-1 text-xs rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+}
 
 export default function ForInstructorsPage() {
   return (
@@ -58,10 +83,90 @@ export default function ForInstructorsPage() {
           <ClassSessionChecklist />
         </section>
 
-        {/* Embed instructions */}
+        {/* Embed EpsilonLab section */}
+        <section id="embed" className="scroll-mt-16">
+          <h2 className="text-lg font-bold text-indigo-300 mb-3">
+            Embed EpsilonLab in Your Course
+          </h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Add an interactive DP simulator directly to your LMS, course
+            website, or Jupyter Book using a standard{" "}
+            <code className="text-indigo-300">&lt;iframe&gt;</code>:
+          </p>
+
+          <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden mb-4">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-gray-800">
+              <span className="text-xs text-gray-400 font-mono">HTML</span>
+              <CopyButton text={EMBED_SNIPPET} />
+            </div>
+            <pre className="px-4 py-3 font-mono text-xs text-gray-300 whitespace-pre-wrap break-all overflow-x-auto">
+              {EMBED_SNIPPET}
+            </pre>
+          </div>
+
+          <div className="mb-4 space-y-2">
+            <h3 className="text-sm font-semibold text-indigo-200">
+              Supported URL Parameters
+            </h3>
+            <table className="w-full text-xs text-gray-300">
+              <thead>
+                <tr className="border-b border-gray-700 text-gray-500 uppercase text-left">
+                  <th className="py-1 pr-4">Parameter</th>
+                  <th className="py-1 pr-4">Values</th>
+                  <th className="py-1">Default</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                <tr>
+                  <td className="py-1.5 pr-4 font-mono text-indigo-300">mechanism</td>
+                  <td className="py-1.5 pr-4">laplace | gaussian</td>
+                  <td className="py-1.5">laplace</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-4 font-mono text-indigo-300">epsilon</td>
+                  <td className="py-1.5 pr-4">
+                    number (<MathTex>{"\\varepsilon > 0"}</MathTex>)
+                  </td>
+                  <td className="py-1.5">1.0</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-4 font-mono text-indigo-300">sensitivity</td>
+                  <td className="py-1.5 pr-4">
+                    number (<MathTex>{"\\Delta f > 0"}</MathTex>)
+                  </td>
+                  <td className="py-1.5">1.0</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-4 font-mono text-indigo-300">query</td>
+                  <td className="py-1.5 pr-4">sum | mean | count</td>
+                  <td className="py-1.5">sum</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-4 font-mono text-indigo-300">runs</td>
+                  <td className="py-1.5 pr-4">1–10 000</td>
+                  <td className="py-1.5">500</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-4 font-mono text-indigo-300">seed</td>
+                  <td className="py-1.5 pr-4">integer (for reproducible demos)</td>
+                  <td className="py-1.5">random</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Link
+            href="/embed"
+            className="inline-block text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            Try it live →
+          </Link>
+        </section>
+
+        {/* Original LMS embed instructions */}
         <section>
           <h2 className="text-lg font-bold text-indigo-300 mb-3">
-            How to Embed in Your LMS
+            LMS-Specific Instructions
           </h2>
           <p className="text-sm text-gray-400 mb-3">
             EpsilonLab has an embed-friendly mode that hides navigation chrome.

@@ -9,7 +9,14 @@
 export type QueryType = "sum" | "mean" | "count";
 
 /** Noise mechanism used by the DP engine. */
-export type Mechanism = "laplace" | "gaussian";
+export type Mechanism =
+  | "laplace"
+  | "gaussian"
+  | "exponential"
+  | "randomized_response"
+  | "report_noisy_max"
+  | "discrete_laplace"
+  | "histogram";
 
 /** Topic / view mode for the simulator. */
 export type Topic = "single_query" | "composition";
