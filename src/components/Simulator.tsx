@@ -269,8 +269,8 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       {!isEmbed && (
-        <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
-          <div className="flex items-baseline gap-3">
+        <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-center sm:justify-between shrink-0">
+          <div className="hidden sm:flex items-baseline gap-3">
             <Link href="/" className="text-2xl font-bold tracking-tight text-indigo-400 no-underline hover:opacity-80 transition-opacity">
               ε EpsilonLab
             </Link>
