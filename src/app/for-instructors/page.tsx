@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PresetPicker from "@/components/PresetPicker";
 import ClassSessionChecklist from "@/components/ClassSessionChecklist";
@@ -13,8 +12,6 @@ export const metadata = {
 export default function ForInstructorsPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <Header />
-
       <main className="flex-1 max-w-5xl mx-auto p-6 space-y-10">
         {/* Quick start */}
         <section>

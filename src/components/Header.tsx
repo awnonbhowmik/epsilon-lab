@@ -16,6 +16,9 @@ export default function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Hide header on embed route (designed for iframe usage)
+  if (pathname === "/embed") return null;
+
   return (
     <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3">
       <div className="flex items-center justify-between">

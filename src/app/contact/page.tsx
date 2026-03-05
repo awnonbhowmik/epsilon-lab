@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import emailjs from "@emailjs/browser";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
   checkHoneypot,
@@ -235,8 +234,6 @@ function ContactForm() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <Header />
-
       <main className="flex-1 max-w-xl mx-auto px-6 py-16 w-full">
         <h1 className="text-3xl font-bold mb-2">Contact Us</h1>
         <p className="text-gray-400 mb-8">
