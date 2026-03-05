@@ -271,7 +271,7 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
       {!isEmbed && (
         <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-center sm:justify-between shrink-0">
           <div className="hidden sm:flex items-baseline gap-3">
-            <span className="text-sm text-gray-300 font-mono">
+            <span className="text-sm text-gray-400 font-mono">
               Differential Privacy Teaching Simulator
             </span>
           </div>
