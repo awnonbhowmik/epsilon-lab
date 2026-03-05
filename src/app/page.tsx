@@ -94,7 +94,7 @@ export default function Home() {
         </section>
 
         {/* Screenshots */}
-        <section className="max-w-5xl mx-auto px-6 py-16">
+        <section className="w-full px-6 py-16">
           <h2 className="text-2xl font-bold text-center mb-10">See It in Action</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {screenshots.map((item) => (
