@@ -238,7 +238,7 @@ export default function ForInstructorsPage() {
           </h2>
           <div className="flex flex-wrap gap-3 text-sm">
             <a
-              href="https://github.com/awnonbhowmik/epsilon-lab/blob/main/docs/INSTRUCTORS.md"
+              href="https://github.com/awnonbhowmik/epsilon-lab/blob/main/README.md#for-instructors"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
@@ -246,7 +246,7 @@ export default function ForInstructorsPage() {
               Instructor Guide ↗
             </a>
             <a
-              href="https://github.com/awnonbhowmik/epsilon-lab/blob/main/docs/SUPPORT.md"
+              href="https://github.com/awnonbhowmik/epsilon-lab/blob/main/README.md#support--bug-reports"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
