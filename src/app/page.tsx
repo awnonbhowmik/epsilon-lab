@@ -2,8 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import DiagnosticsPanel from "@/components/DiagnosticsPanel";
+
+export const metadata = {
+  title: "EpsilonLab — Differential Privacy Simulator",
+  description:
+    "Free, browser-based differential privacy simulator for classroom instruction. Laplace & Gaussian mechanisms, presets, exports, and more.",
+};
 
 const features = [
   {
@@ -38,7 +42,6 @@ const screenshots = [
 
 export default function Home() {
   return (
-    <ErrorBoundary>
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <Header />
 
@@ -151,8 +154,6 @@ export default function Home() {
       </main>
 
       <Footer />
-      <DiagnosticsPanel />
     </div>
-    </ErrorBoundary>
   );
 }

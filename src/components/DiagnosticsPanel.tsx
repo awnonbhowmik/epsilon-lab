@@ -1,12 +1,22 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { APP_NAME, APP_VERSION, BUILD_DATE } from "@/lib/version";
+import { usePathname, useSearchParams } from "next/navigation";
+import { APP_NAME, APP_VERSION, BUILD_DATE, GIT_COMMIT } from "@/lib/version";
 import { getEnvironment } from "@/lib/env";
+import { decodeShareState } from "@/lib/share/urlState";
+
+/** Last error captured by the ErrorBoundary (set externally). */
+let _lastError: string | null = null;
+export function setLastError(msg: string) {
+  _lastError = msg;
+}
 
 export default function DiagnosticsPanel() {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -18,18 +28,37 @@ export default function DiagnosticsPanel() {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
+  const isSimulator = pathname === "/simulator" || pathname === "/embed";
+
+  const simState = isSimulator ? decodeShareState(searchParams) : null;
+
   const buildText = useCallback((): string => {
     const lines = [
       `${APP_NAME} v${APP_VERSION}`,
       `Build: ${BUILD_DATE}`,
+      `Commit: ${GIT_COMMIT.slice(0, 8)}`,
       `Environment: ${getEnvironment()}`,
+      `Route: ${pathname}`,
       `User-Agent: ${navigator.userAgent}`,
-      `URL: ${window.location.href}`,
       `Screen: ${window.screen.width}x${window.screen.height}`,
       `Time: ${new Date().toISOString()}`,
     ];
+    if (simState) {
+      lines.push("--- Simulator State ---");
+      if (simState.mechanism) lines.push(`Mechanism: ${simState.mechanism}`);
+      if (simState.topic) lines.push(`Topic: ${simState.topic}`);
+      if (simState.datasetId) lines.push(`Dataset: ${simState.datasetId}`);
+      if (simState.epsilon) lines.push(`Epsilon: ${simState.epsilon}`);
+      if (simState.delta != null) lines.push(`Delta: ${simState.delta}`);
+      if (simState.sensitivity) lines.push(`Sensitivity: ${simState.sensitivity}`);
+      if (simState.runs) lines.push(`Runs: ${simState.runs}`);
+      if (simState.seed) lines.push(`Seed: ${simState.seed}`);
+    }
+    if (_lastError) {
+      lines.push(`Last Error: ${_lastError}`);
+    }
     return lines.join("\n");
-  }, []);
+  }, [pathname, simState]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -62,7 +91,13 @@ export default function DiagnosticsPanel() {
           <span className="text-gray-500">Build:</span> {BUILD_DATE}
         </p>
         <p>
+          <span className="text-gray-500">Commit:</span> {GIT_COMMIT.slice(0, 8)}
+        </p>
+        <p>
           <span className="text-gray-500">Env:</span> {getEnvironment()}
+        </p>
+        <p>
+          <span className="text-gray-500">Route:</span> {pathname}
         </p>
         <p>
           <span className="text-gray-500">UA:</span>{" "}
@@ -70,6 +105,62 @@ export default function DiagnosticsPanel() {
             {typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
           </span>
         </p>
+        {simState && (
+          <>
+            <p className="text-gray-500 pt-1 border-t border-gray-800">
+              Simulator State
+            </p>
+            {simState.mechanism && (
+              <p>
+                <span className="text-gray-500">Mechanism:</span>{" "}
+                {simState.mechanism}
+              </p>
+            )}
+            {simState.topic && (
+              <p>
+                <span className="text-gray-500">Topic:</span> {simState.topic}
+              </p>
+            )}
+            {simState.datasetId && (
+              <p>
+                <span className="text-gray-500">Dataset:</span>{" "}
+                {simState.datasetId}
+              </p>
+            )}
+            {simState.epsilon != null && (
+              <p>
+                <span className="text-gray-500">Epsilon:</span>{" "}
+                {simState.epsilon}
+              </p>
+            )}
+            {simState.delta != null && (
+              <p>
+                <span className="text-gray-500">Delta:</span> {simState.delta}
+              </p>
+            )}
+            {simState.sensitivity != null && (
+              <p>
+                <span className="text-gray-500">Sensitivity:</span>{" "}
+                {simState.sensitivity}
+              </p>
+            )}
+            {simState.runs != null && (
+              <p>
+                <span className="text-gray-500">Runs:</span> {simState.runs}
+              </p>
+            )}
+            {simState.seed && (
+              <p>
+                <span className="text-gray-500">Seed:</span> {simState.seed}
+              </p>
+            )}
+          </>
+        )}
+        {_lastError && (
+          <p className="text-red-400 pt-1 border-t border-gray-800">
+            <span className="text-gray-500">Last Error:</span> {_lastError}
+          </p>
+        )}
       </div>
       <button
         onClick={handleCopy}

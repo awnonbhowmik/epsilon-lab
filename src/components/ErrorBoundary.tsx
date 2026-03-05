@@ -3,6 +3,7 @@
 import React from "react";
 import { APP_NAME, APP_VERSION } from "@/lib/version";
 import { logError } from "@/lib/logger";
+import { setLastError } from "@/components/DiagnosticsPanel";
 
 interface Props {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
+    setLastError(error.message);
     logError("Uncaught UI error", {
       message: error.message,
       stack: error.stack,
