@@ -133,7 +133,7 @@ export function discreteLaplaceSample(
   // Use geometric distribution: P(X = k) for k = 0, 1, 2, ...
   // Then assign sign randomly to get two-sided distribution.
   const u = Math.random();
-  // Inverse CDF of geometric: ceil(log(u) / log(1-p)) - 1
+  // Inverse CDF of geometric: floor(log(u) / log(1-p))
   const magnitude = Math.floor(Math.log(u) / Math.log(1 - p));
   const sign = Math.random() < 0.5 ? 1 : -1;
   // Special case: magnitude 0 has no sign ambiguity

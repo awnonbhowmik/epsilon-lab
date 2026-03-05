@@ -181,17 +181,20 @@ export default function HistogramPage() {
               </tr>
             </thead>
             <tbody>
-              {noisyBins.map((b) => (
-                <tr key={b.label} className="border-b border-gray-800 text-gray-300">
-                  <td className="py-1">{b.label}</td>
-                  <td className="text-right py-1">{b.trueCount}</td>
-                  <td className="text-right py-1">{b.noisyCount.toFixed(1)}</td>
-                  <td className="text-right py-1">
-                    {(b.noisyCount - b.trueCount > 0 ? "+" : "")}
-                    {(b.noisyCount - b.trueCount).toFixed(1)}
-                  </td>
-                </tr>
-              ))}
+              {noisyBins.map((b) => {
+                const error = b.noisyCount - b.trueCount;
+                return (
+                  <tr key={b.label} className="border-b border-gray-800 text-gray-300">
+                    <td className="py-1">{b.label}</td>
+                    <td className="text-right py-1">{b.trueCount}</td>
+                    <td className="text-right py-1">{b.noisyCount.toFixed(1)}</td>
+                    <td className="text-right py-1">
+                      {error > 0 ? "+" : ""}
+                      {error.toFixed(1)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

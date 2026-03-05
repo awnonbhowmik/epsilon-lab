@@ -1,11 +1,15 @@
-"use client";
-
-import { useState, useCallback } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import PresetPicker from "@/components/PresetPicker";
 import ClassSessionChecklist from "@/components/ClassSessionChecklist";
+import EmbedCopyButton from "@/components/EmbedCopyButton";
 import MathTex from "@/components/Math";
+
+export const metadata = {
+  title: "For Instructors",
+  description:
+    "Quick start guide, demo presets, embed instructions, and LMS embedding for teaching differential privacy with EpsilonLab.",
+};
 
 const EMBED_SNIPPET = `<iframe
   src="https://epsilonlab.io/embed?mechanism=laplace&epsilon=1.0"
@@ -14,25 +18,6 @@ const EMBED_SNIPPET = `<iframe
   frameborder="0"
   allowfullscreen
 ></iframe>`;
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch { /* clipboard may fail */ }
-  }, [text]);
-  return (
-    <button
-      onClick={copy}
-      className="shrink-0 px-2 py-1 text-xs rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-    >
-      {copied ? "Copied!" : "Copy"}
-    </button>
-  );
-}
 
 export default function ForInstructorsPage() {
   return (
@@ -97,7 +82,7 @@ export default function ForInstructorsPage() {
           <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden mb-4">
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-gray-800">
               <span className="text-xs text-gray-400 font-mono">HTML</span>
-              <CopyButton text={EMBED_SNIPPET} />
+              <EmbedCopyButton text={EMBED_SNIPPET} />
             </div>
             <pre className="px-4 py-3 font-mono text-xs text-gray-300 whitespace-pre-wrap break-all overflow-x-auto">
               {EMBED_SNIPPET}

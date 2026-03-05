@@ -37,14 +37,16 @@ export default function ReportNoisyMaxPage() {
   // Compute noisy counts for visualization (single run)
   const noisyData = useMemo(() => {
     const scale = 1 / epsilon;
-    return counts.map((c) => ({
-      label: c.label,
-      trueCount: c.count,
-      noisyCount: Math.round(
-        c.count +
-          (-scale * Math.sign(Math.random() - 0.5) * Math.log(1 - 2 * Math.abs(Math.random() - 0.5))),
-      ),
-    }));
+    return counts.map((c) => {
+      const u = Math.random();
+      const sign = u >= 0.5 ? 1 : -1;
+      const noise = -scale * sign * Math.log(1 - 2 * Math.abs(u - 0.5));
+      return {
+        label: c.label,
+        trueCount: c.count,
+        noisyCount: Math.round(c.count + noise),
+      };
+    });
   }, [counts, epsilon]);
 
   // 100 trials win frequencies
