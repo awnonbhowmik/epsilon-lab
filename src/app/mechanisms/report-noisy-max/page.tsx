@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -26,6 +26,20 @@ const DEFAULT_COUNTS: CountCandidate[] = [
   { label: "Category E", count: 145 },
 ];
 
+function computeNoisyData(counts: CountCandidate[], epsilon: number) {
+  const scale = 1 / epsilon;
+  return counts.map((c) => {
+    const u = Math.random();
+    const sign = u >= 0.5 ? 1 : -1;
+    const noise = -scale * sign * Math.log(1 - 2 * Math.abs(u - 0.5));
+    return {
+      label: c.label,
+      trueCount: c.count,
+      noisyCount: Math.round(c.count + noise),
+    };
+  });
+}
+
 const TRIAL_COUNT = 100;
 
 export default function ReportNoisyMaxPage() {
@@ -34,19 +48,13 @@ export default function ReportNoisyMaxPage() {
   const [winner, setWinner] = useState<string | null>(null);
   const [showTheory, setShowTheory] = useState(false);
 
-  // Compute noisy counts for visualization (single run)
-  const noisyData = useMemo(() => {
-    const scale = 1 / epsilon;
-    return counts.map((c) => {
-      const u = Math.random();
-      const sign = u >= 0.5 ? 1 : -1;
-      const noise = -scale * sign * Math.log(1 - 2 * Math.abs(u - 0.5));
-      return {
-        label: c.label,
-        trueCount: c.count,
-        noisyCount: Math.round(c.count + noise),
-      };
-    });
+  // Noisy counts for visualization (single run)
+  const [noisyData, setNoisyData] = useState(() =>
+    computeNoisyData(counts, epsilon),
+  );
+
+  useEffect(() => {
+    setNoisyData(computeNoisyData(counts, epsilon));
   }, [counts, epsilon]);
 
   // 100 trials win frequencies
@@ -77,6 +85,7 @@ export default function ReportNoisyMaxPage() {
   }
 
   function run() {
+    setNoisyData(computeNoisyData(counts, epsilon));
     setWinner(reportNoisyMax(counts, epsilon));
   }
 

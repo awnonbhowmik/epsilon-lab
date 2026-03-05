@@ -22,7 +22,6 @@ export default function RandomizedResponsePage() {
   // Single noisy response
   const noisyResponse = useMemo(
     () => randomizedResponse(trueAnswer, epsilon),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [trueAnswer, epsilon],
   );
 
