@@ -2,6 +2,12 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+export const metadata = {
+  title: "Pricing",
+  description:
+    "EpsilonLab pricing plans for students, instructors, and institutions.",
+};
+
 const tiers = [
   {
     name: "Student",

@@ -4,6 +4,12 @@ import Footer from "@/components/Footer";
 import PresetPicker from "@/components/PresetPicker";
 import ClassSessionChecklist from "@/components/ClassSessionChecklist";
 
+export const metadata = {
+  title: "For Instructors",
+  description:
+    "Quick start guide, demo presets, and LMS embedding instructions for teaching differential privacy with EpsilonLab.",
+};
+
 export default function ForInstructorsPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
@@ -123,7 +129,7 @@ export default function ForInstructorsPage() {
         </section>
 
         {/* Links */}
-        <section className="flex gap-4 text-sm">
+        <section className="flex flex-wrap gap-4 text-sm">
           <Link
             href="/classroom-pack"
             className="px-4 py-2 rounded border border-indigo-600 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/40 transition-colors"
@@ -136,6 +142,31 @@ export default function ForInstructorsPage() {
           >
             Preview Embed Mode →
           </Link>
+        </section>
+
+        {/* Documentation */}
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-indigo-300 mb-3">
+            Documentation
+          </h2>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <a
+              href="https://github.com/awnonbhowmik/epsilon-lab/blob/main/docs/INSTRUCTORS.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              Instructor Guide ↗
+            </a>
+            <a
+              href="https://github.com/awnonbhowmik/epsilon-lab/blob/main/docs/SUPPORT.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              Support &amp; Bug Reports ↗
+            </a>
+          </div>
         </section>
       </main>
 

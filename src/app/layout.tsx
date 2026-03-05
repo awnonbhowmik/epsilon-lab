@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "katex/dist/katex.min.css";
 import "./globals.css";
+import ClientShell from "@/components/ClientShell";
 
 export const metadata: Metadata = {
-  title: "EpsilonLab — Differential Privacy Simulator",
+  title: {
+    default: "EpsilonLab — Differential Privacy Simulator",
+    template: "%s — EpsilonLab",
+  },
   description:
-    "Interactive platform for learning and demonstrating differential privacy.",
+    "Interactive platform for learning and demonstrating differential privacy. Free for students, built for instructors.",
 };
 
 const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
@@ -20,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-950 text-gray-100">
-        {children}
+        <ClientShell>{children}</ClientShell>
         {/*
           Privacy-friendly analytics (Plausible) — loaded only when:
             1. NODE_ENV is "production"

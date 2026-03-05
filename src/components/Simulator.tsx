@@ -10,6 +10,7 @@ import ModeToggle from "./ModeToggle";
 import TheoryPanel from "./TheoryPanel";
 import References from "./References";
 import { APP_NAME, APP_VERSION } from "@/lib/version";
+import { useToast } from "@/components/ToastProvider";
 import CompositionPanel from "./CompositionPanel";
 import PresetPicker from "./PresetPicker";
 import { DATASETS, type Dataset } from "@/lib/datasets";
@@ -40,6 +41,7 @@ const UtilityVsEpsilonChart = dynamic(
 export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const initialRef = useRef(true);
   const isEmbed = embedProp || searchParams.get("embed") === "1";
 
@@ -248,10 +250,14 @@ export default function Simulator({ embed: embedProp }: { embed?: boolean }) {
       } finally {
         document.body.removeChild(container);
       }
+    } catch (err) {
+      showToast(
+        `Export failed: ${err instanceof Error ? err.message : "unknown error"}. Please try again.`,
+      );
     } finally {
       setExporting(false);
     }
-  }, []);
+  }, [showToast]);
 
   const handleExportPdf = useCallback(() => {
     window.print();

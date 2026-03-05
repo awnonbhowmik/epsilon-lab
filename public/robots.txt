@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /embed
+
+Sitemap: https://epsilonlab.app/sitemap.xml

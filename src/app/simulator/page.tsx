@@ -1,15 +1,16 @@
 import { Suspense } from "react";
 import Simulator from "@/components/Simulator";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import DiagnosticsPanel from "@/components/DiagnosticsPanel";
+
+export const metadata = {
+  title: "Simulator",
+  description:
+    "Run interactive differential privacy simulations with Laplace and Gaussian mechanisms.",
+};
 
 export default function SimulatorPage() {
   return (
-    <ErrorBoundary>
-      <Suspense>
-        <Simulator />
-      </Suspense>
-      <DiagnosticsPanel />
-    </ErrorBoundary>
+    <Suspense>
+      <Simulator />
+    </Suspense>
   );
 }
