@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import MathTex from "./Math";
 
 interface BlockProps {
@@ -34,6 +35,7 @@ function Formula({ children }: { children: string }) {
  */
 export default function TheoryPanel() {
   return (
+    <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Definition 1 */}
       <Block title="ε-Differential Privacy (Dwork et al., 2006)">
@@ -157,5 +159,11 @@ export default function TheoryPanel() {
         </p>
       </Block>
     </div>
+    <div className="mt-4 text-xs text-gray-500">
+      <Link href="/appendix" className="text-indigo-400 hover:underline">
+        Full Math Appendix →
+      </Link>
+    </div>
+    </>
   );
 }
