@@ -174,7 +174,7 @@ export default function PressPage() {
             Cite {APP_NAME}
           </h2>
           <p className="text-sm text-gray-400">
-            Awnon Kumar Bhowmik ({BUILD_DATE.slice(0, 4)}).{" "}
+            Awnon Bhowmik ({BUILD_DATE.slice(0, 4)}).{" "}
             <em>
               {APP_NAME}: Interactive Differential Privacy Simulation Platform
             </em>{" "}
