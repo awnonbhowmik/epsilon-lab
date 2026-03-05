@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { APP_NAME, APP_VERSION, BUILD_DATE } from "@/lib/version";
 import { encodeShareState } from "@/lib/share/urlState";
@@ -127,8 +126,6 @@ export default function PressPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <Header />
-
       <main className="flex-1 max-w-3xl mx-auto px-6 py-12 space-y-10">
         <h1 className="text-2xl font-bold text-indigo-400">Press &amp; Outreach</h1>
 

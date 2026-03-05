@@ -4,20 +4,6 @@ import Footer from "@/components/Footer";
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-baseline gap-1">
-          <span className="text-xl font-bold text-indigo-400">ε</span>
-          <span className="text-xl font-bold text-gray-100">EpsilonLab</span>
-        </Link>
-        <div className="flex gap-4 text-sm text-gray-400">
-          <Link href="/" className="hover:text-indigo-300">Home</Link>
-          <Link href="/simulator" className="hover:text-indigo-300">Simulator</Link>
-          <Link href="/for-instructors" className="hover:text-indigo-300">Instructors</Link>
-          <Link href="/pricing" className="hover:text-indigo-300">Pricing</Link>
-          <Link href="/contact" className="hover:text-indigo-300">Contact</Link>
-        </div>
-      </nav>
-
       <main className="flex-1 max-w-3xl mx-auto px-6 py-16 space-y-10">
         <h1 className="text-3xl font-bold">Privacy Policy</h1>
 

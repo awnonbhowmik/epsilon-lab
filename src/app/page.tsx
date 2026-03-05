@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata = {
@@ -43,8 +42,6 @@ const screenshots = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <Header />
-
       <main className="flex-1">
         {/* Hero */}
         <section className="max-w-4xl mx-auto px-6 py-20 text-center">

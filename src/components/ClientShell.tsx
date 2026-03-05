@@ -4,9 +4,11 @@ import { Suspense } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ToastProvider";
 import DiagnosticsPanel from "@/components/DiagnosticsPanel";
+import Header from "@/components/Header";
 
 /**
  * Client-side shell that wraps the entire app with:
+ * - Header (responsive navbar with hamburger menu on mobile)
  * - ErrorBoundary for graceful error handling
  * - ToastProvider for non-fatal notifications
  * - DiagnosticsPanel (Shift+D)
@@ -22,6 +24,7 @@ export default function ClientShell({
   return (
     <ErrorBoundary>
       <ToastProvider>
+        <Header />
         {children}
         <Suspense>
           <DiagnosticsPanel />
