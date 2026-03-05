@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -35,7 +35,7 @@ export default function ReportNoisyMaxPage() {
   const [showTheory, setShowTheory] = useState(false);
 
   // Compute noisy counts for visualization (single run)
-  const noisyData = useMemo(() => {
+  const computeNoisyData = useCallback(() => {
     const scale = 1 / epsilon;
     return counts.map((c) => {
       const u = Math.random();
@@ -48,6 +48,14 @@ export default function ReportNoisyMaxPage() {
       };
     });
   }, [counts, epsilon]);
+
+  const [noisyData, setNoisyData] = useState<
+    { label: string; trueCount: number; noisyCount: number }[]
+  >([]);
+
+  useEffect(() => {
+    setNoisyData(computeNoisyData());
+  }, [computeNoisyData]);
 
   // 100 trials win frequencies
   const winFrequencies = useMemo(() => {
@@ -77,6 +85,7 @@ export default function ReportNoisyMaxPage() {
   }
 
   function run() {
+    setNoisyData(computeNoisyData());
     setWinner(reportNoisyMax(counts, epsilon));
   }
 

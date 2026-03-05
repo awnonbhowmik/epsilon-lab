@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import Footer from "@/components/Footer";
 import BudgetBar from "@/components/BudgetBar";
 import MathTex from "@/components/Math";
@@ -55,9 +55,12 @@ function saveState(state: BudgetState) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+const emptySubscribe = () => () => {};
+
 export default function BudgetPage() {
-  const [state, setState] = useState<BudgetState>(DEFAULT_STATE);
-  const [loaded, setLoaded] = useState(false);
+  const loaded = useSyncExternalStore(emptySubscribe, () => true, () => false);
+
+  const [state, setState] = useState<BudgetState>(() => loadState());
 
   // Form state
   const [formMechanism, setFormMechanism] = useState(MECHANISMS[0]);
@@ -67,16 +70,11 @@ export default function BudgetPage() {
 
   // Budget setup editing
   const [editingTotal, setEditingTotal] = useState(false);
-  const [totalInput, setTotalInput] = useState("1.0");
-  const [deltaInput, setDeltaInput] = useState("");
-
-  useEffect(() => {
+  const [totalInput, setTotalInput] = useState(() => String(loadState().total));
+  const [deltaInput, setDeltaInput] = useState(() => {
     const s = loadState();
-    setState(s);
-    setTotalInput(String(s.total));
-    setDeltaInput(s.delta != null ? String(s.delta) : "");
-    setLoaded(true);
-  }, []);
+    return s.delta != null ? String(s.delta) : "";
+  });
 
   const usedEpsilon = state.queries.reduce((acc, q) => acc + q.epsilon, 0);
   const usedDelta = state.queries.reduce(
